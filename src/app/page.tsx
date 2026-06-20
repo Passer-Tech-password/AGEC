@@ -2,108 +2,344 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { INVESTMENT_PLANS, INVESTMENT_CATEGORIES } from '../lib/data';
-import { formatCurrency } from '../lib/utils';
-import { ArrowRight, CheckCircle, Users, TrendingUp, Shield, Zap, Leaf } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Badge } from '@/components/ui/badge';
+import {
+  Leaf,
+  TrendingUp,
+  Users,
+  ShieldCheck,
+  ArrowRight,
+  CheckCircle2,
+  BarChart3,
+  PiggyBank,
+  Gift,
+  Sprout,
+  Wheat,
+  Menu,
+  X,
+  ChevronRight,
+  ChevronLeft,
+  Star,
+  Phone,
+  Mail,
+  MapPin,
+  Download,
+  Wallet,
+  Briefcase,
+  Clock,
+  User
+} from 'lucide-react';
 import Link from 'next/link';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 
-export default function Home() {
+const investmentPlans = [
+  {
+    name: 'Starter Plan',
+    description: 'Perfect for new investors',
+    min: 20000,
+    max: 49999,
+    roi: 18,
+    duration: '3 Months',
+    biWeeklyPayout: '₦1,500 - ₦3,000',
+    popular: false,
+    featured: false,
+    features: ['18% ROI', '3 Months Duration', 'Bi-weekly Payouts', '24/7 Support']
+  },
+  {
+    name: 'Bronze Plan',
+    description: 'Grow your investment steadily',
+    min: 50000,
+    max: 99999,
+    roi: 24,
+    duration: '4 Months',
+    biWeeklyPayout: '₦3,500 - ₦6,000',
+    popular: false,
+    featured: false,
+    features: ['24% ROI', '4 Months Duration', 'Bi-weekly Payouts', 'Priority Support']
+  },
+  {
+    name: 'Silver Plan',
+    description: 'Balanced investment option',
+    min: 100000,
+    max: 249999,
+    roi: 30,
+    duration: '6 Months',
+    biWeeklyPayout: '₦7,500 - ₦15,000',
+    popular: true,
+    featured: false,
+    features: ['30% ROI', '6 Months Duration', 'Bi-weekly Payouts', 'Dedicated Manager']
+  },
+  {
+    name: 'Gold Plan',
+    description: 'Maximize your returns',
+    min: 250000,
+    max: 499999,
+    roi: 40,
+    duration: '9 Months',
+    biWeeklyPayout: '₦15,000 - ₦30,000',
+    popular: false,
+    featured: false,
+    features: ['40% ROI', '9 Months Duration', 'Bi-weekly Payouts', 'VIP Support Access']
+  },
+  {
+    name: 'Elite Plan',
+    description: 'For serious investors',
+    min: 500000,
+    max: null,
+    roi: 50,
+    duration: '12 Months',
+    biWeeklyPayout: '₦35,000+',
+    popular: false,
+    featured: true,
+    features: ['50% ROI', '12 Months Duration', 'Bi-weekly Payouts', 'Personal Account Manager', 'Exclusive Deals']
+  },
+];
+
+const howItWorks = [
+  { icon: <User className="w-8 h-8" />, title: 'Register Account', description: 'Create your account in a few simple steps.' },
+  { icon: <Wallet className="w-8 h-8" />, title: 'Fund Wallet', description: 'Deposit funds using our payment options.' },
+  { icon: <Sprout className="w-8 h-8" />, title: 'Choose Investment', description: 'Select from our amazing investment plans.' },
+  { icon: <PiggyBank className="w-8 h-8" />, title: 'Earn & Withdraw', description: 'Earn payouts and withdraw every 2 weeks.' },
+];
+
+const farmProjects = [
+  {
+    id: 1,
+    name: 'Poultry Farm',
+    location: 'Ogun State',
+    amount: '₦500,000',
+    roi: 78,
+    duration: '24 Days',
+    spotsLeft: 12,
+    image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&q=80&w=800'
+  },
+  {
+    id: 2,
+    name: 'Rice Farm',
+    location: 'Kebbi State',
+    amount: '₦800,000',
+    roi: 60,
+    duration: '24 Days',
+    spotsLeft: 8,
+    image: 'https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&q=80&w=800'
+  },
+  {
+    id: 3,
+    name: 'Fish Farm',
+    location: 'Lagos State',
+    amount: '₦300,000',
+    roi: 80,
+    duration: '10 Days',
+    spotsLeft: 25,
+    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&q=80&w=800'
+  },
+];
+
+const testimonials = [
+  { name: 'Adewale T.', role: 'Investor since 2023', text: 'AGEC has been the best investment decision I made. Consistent returns and withdrawals are always on time.', rating: 5, avatar: 'A' },
+  { name: 'Blessing O.', role: 'Investor since 2024', text: 'Transparent platform with genuine farm projects. I love seeing my money grow safely.', rating: 5, avatar: 'B' },
+  { name: 'Chidi E.', role: 'Investor since 2023', text: 'Customer support is excellent! They respond promptly and help with all my inquiries.', rating: 5, avatar: 'C' },
+];
+
+const stats = [
+  { value: '₦250M+', label: 'Total Invested', icon: <BarChart3 className="w-6 h-6" /> },
+  { value: '₦95M+', label: 'Total Paid Out', icon: <PiggyBank className="w-6 h-6" /> },
+  { value: '100+', label: 'Farm Projects', icon: <Leaf className="w-6 h-6" /> },
+  { value: '98%', label: 'Investor Satisfaction', icon: <CheckCircle2 className="w-6 h-6" /> },
+];
+
+export default function LandingPage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [testimonialIndex, setTestimonialIndex] = useState(0);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md z-50 border-b border-gray-100">
+      <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-xl z-50 border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-green-800 rounded-xl flex items-center justify-center">
-                <Leaf className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-between h-20">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center border-2 border-green-700">
+                <Leaf className="w-7 h-7 text-green-700" />
               </div>
-              <span className="text-2xl font-bold text-green-800">AGEC</span>
-              <span className="text-sm text-gray-500 font-medium">AGRO ELITE</span>
+              <div className="flex flex-col">
+                <span className="text-2xl font-bold text-green-800">AGEC</span>
+                <p className="text-xs text-green-600 font-medium tracking-wider">AGRO ELITE</p>
+              </div>
+            </Link>
+
+            <div className="hidden lg:flex items-center gap-8">
+              <Link href="/" className="text-gray-800 hover:text-green-700 font-medium transition-colors text-sm">Home</Link>
+              <Link href="#about" className="text-gray-600 hover:text-green-700 font-medium transition-colors text-sm">About Us</Link>
+              <Link href="#plans" className="text-gray-600 hover:text-green-700 font-medium transition-colors text-sm">Investment Plans</Link>
+              <Link href="#projects" className="text-gray-600 hover:text-green-700 font-medium transition-colors text-sm">Farm Projects</Link>
+              <Link href="#testimonials" className="text-gray-600 hover:text-green-700 font-medium transition-colors text-sm">Testimonials</Link>
+              <Link href="#" className="text-gray-600 hover:text-green-700 font-medium transition-colors text-sm">FAQ</Link>
+              <Link href="#" className="text-gray-600 hover:text-green-700 font-medium transition-colors text-sm">Contact Us</Link>
             </div>
-            <div className="hidden md:flex items-center gap-8">
-              <a href="#home" className="text-gray-700 hover:text-green-700 font-medium transition-colors">Home</a>
-              <a href="#about" className="text-gray-700 hover:text-green-700 font-medium transition-colors">About Us</a>
-              <a href="#plans" className="text-gray-700 hover:text-green-700 font-medium transition-colors">Investment Plans</a>
-              <a href="#categories" className="text-gray-700 hover:text-green-700 font-medium transition-colors">Farm Projects</a>
-              <a href="#testimonials" className="text-gray-700 hover:text-green-700 font-medium transition-colors">Testimonials</a>
-              <a href="#faq" className="text-gray-700 hover:text-green-700 font-medium transition-colors">FAQ</a>
-              <a href="#contact" className="text-gray-700 hover:text-green-700 font-medium transition-colors">Contact Us</a>
-            </div>
-            <div className="flex items-center gap-4">
+
+            <div className="hidden lg:flex items-center gap-4">
               <Link href="/login">
-                <Button variant="ghost" className="text-green-800 hover:text-green-900 hover:bg-green-50">Login</Button>
+                <Button variant="ghost" className="text-gray-700 hover:text-green-700 hover:bg-green-50 text-sm font-medium">Login</Button>
               </Link>
               <Link href="/register">
-                <Button className="bg-green-700 hover:bg-green-800 text-white">Get Started</Button>
+                <Button className="bg-gradient-to-r from-green-700 to-green-800 hover:from-green-800 hover:to-green-900 text-white text-sm font-medium shadow-lg shadow-green-700/20">
+                  Get Started
+                </Button>
               </Link>
             </div>
+
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="lg:hidden bg-white border-t border-gray-100 shadow-lg"
+          >
+            <div className="px-4 py-6 space-y-4">
+              <Link href="/" className="block text-gray-800 font-medium py-2">Home</Link>
+              <Link href="#about" className="block text-gray-600 font-medium py-2">About Us</Link>
+              <Link href="#plans" className="block text-gray-600 font-medium py-2">Investment Plans</Link>
+              <Link href="#projects" className="block text-gray-600 font-medium py-2">Farm Projects</Link>
+              <div className="pt-4 border-t border-gray-100 space-y-3">
+                <Link href="/login" className="block w-full">
+                  <Button variant="ghost" className="w-full justify-center">Login</Button>
+                </Link>
+                <Link href="/register" className="block w-full">
+                  <Button className="w-full justify-center bg-gradient-to-r from-green-700 to-green-800">Get Started</Button>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
       </nav>
 
       {/* Hero Section */}
-      <section id="home" className="pt-32 pb-20 bg-gradient-to-b from-green-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="pt-32 pb-20 relative overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img
+            src="https://images.unsplash.com/photo-1560493676-04071c5f467b?auto=format&fit=crop&q=80&w=2400"
+            alt="Farm background"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-green-900/90 via-green-800/70 to-transparent" />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.8 }}
+              className="text-white"
             >
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight mb-6">
-                Grow Your Wealth <span className="text-green-700">Through Agriculture</span>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
+                Grow Your Wealth <br />
+                <span className="text-green-300">Through Agriculture</span>
               </h1>
-              <p className="text-lg text-gray-600 mb-8">
+              <p className="text-lg md:text-xl text-green-100 mb-8 leading-relaxed opacity-95">
                 Invest in verified agricultural projects and earn consistent returns while supporting food production and communities.
               </p>
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 mb-10">
                 <Link href="/register">
-                  <Button className="bg-green-700 hover:bg-green-800 text-white text-lg px-8 py-6 h-auto">
-                    Start Investing <ArrowRight className="ml-2 w-5 h-5" />
+                  <Button className="h-14 px-8 text-lg bg-green-700 hover:bg-green-800 text-white shadow-xl shadow-green-900/40">
+                    Start Investing
                   </Button>
                 </Link>
-                <Button variant="secondary" className="text-lg px-8 py-6 h-auto">
-                  View Plans
-                </Button>
+                <Link href="#plans">
+                  <Button variant="ghost" className="h-14 px-8 text-lg bg-white/10 hover:bg-white/20 text-white border border-white/30 backdrop-blur-sm">
+                    View Plans
+                  </Button>
+                </Link>
               </div>
-              <div className="mt-8 flex items-center gap-4">
+
+              <div className="flex items-center gap-6">
                 <div className="flex -space-x-3">
                   {[1, 2, 3, 4].map((i) => (
-                    <img
-                      key={i}
-                      src={`https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=professional%20headshot%20of%20a%20diverse%20person&image_size=square`}
-                      alt="Investor"
-                      className="w-10 h-10 rounded-full border-2 border-white object-cover"
-                    />
+                    <div key={i} className="w-12 h-12 rounded-full border-4 border-white bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white font-bold text-sm shadow-lg">
+                      {String.fromCharCode(64 + i)}
+                    </div>
                   ))}
                 </div>
-                <p className="text-sm text-gray-600">
-                  Trusted by <span className="font-bold text-gray-900">5,000+</span> investors
-                </p>
+                <div>
+                  <p className="font-semibold">Trusted by 5,000+ Investors</p>
+                  <p className="text-green-200 text-sm">Join our community of smart investors growing with AGEC.</p>
+                </div>
               </div>
             </motion.div>
+
             <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative"
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="relative hidden lg:block"
             >
-              <img
-                src="https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=lush%20green%20agricultural%20farm%20with%20crops%20and%20modern%20farming%20equipment&image_size=landscape_16_9"
-                alt="Agricultural Farm"
-                className="rounded-3xl shadow-2xl"
-              />
-              <div className="absolute -bottom-6 -left-6 bg-white rounded-2xl p-4 shadow-xl border border-gray-100">
-                <div className="flex items-center gap-3">
-                  <div className="bg-green-100 p-3 rounded-xl">
-                    <TrendingUp className="w-6 h-6 text-green-700" />
+              <div className="bg-white rounded-3xl p-6 shadow-2xl shadow-black/20 border border-white/20">
+                <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-700 rounded-2xl flex items-center justify-center">
+                      <Leaf className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-gray-600 text-sm">Welcome back,</p>
+                      <p className="font-semibold text-gray-900">John Investor</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Total Invested</p>
-                    <p className="text-2xl font-bold text-green-800">₦250M+</p>
+                  <div className="flex items-center gap-2">
+                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                      <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                      </svg>
+                    </div>
+                    <div className="w-12 h-12 bg-gradient-to-br from-green-600 to-amber-600 rounded-full flex items-center justify-center text-white font-bold">
+                      JI
+                    </div>
                   </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="bg-gradient-to-br from-green-700 to-green-900 rounded-2xl p-5 text-white">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-green-200 text-xs font-medium">Total Earnings</p>
+                      <span className="text-green-300 text-xs bg-green-800 px-2 py-0.5 rounded-full">+6.5%</span>
+                    </div>
+                    <p className="text-2xl font-bold">₦120,000.00</p>
+                    <p className="text-green-300 text-xs mt-1">This Month</p>
+                  </div>
+                  <div className="bg-white border-2 border-green-100 rounded-2xl p-5">
+                    <p className="text-gray-500 text-xs font-medium mb-2">Available Balance</p>
+                    <p className="text-2xl font-bold text-gray-900">₦45,000.00</p>
+                    <Button className="mt-2 w-full h-8 bg-green-700 hover:bg-green-800 text-white text-xs">
+                      Withdraw
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-4 gap-3">
+                  {[
+                    { label: 'Total', value: '₦350,000' },
+                    { label: 'Active', value: '8' },
+                    { label: 'Total Paid', value: '₦75,000' },
+                    { label: 'Referrals', value: '15' },
+                  ].map((stat, i) => (
+                    <div key={i} className="text-center p-3 bg-gray-50 rounded-xl border border-gray-100">
+                      <div className="w-8 h-8 mx-auto mb-2 bg-green-100 rounded-lg flex items-center justify-center">
+                        <CheckCircle2 className="w-5 h-5 text-green-700" />
+                      </div>
+                      <p className="text-xs text-gray-500">{stat.label}</p>
+                      <p className="font-bold text-gray-900 text-sm">{stat.value}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </motion.div>
@@ -111,199 +347,152 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 bg-white">
+      {/* Stats Bar */}
+      <section className="py-8 bg-gradient-to-r from-green-700 to-green-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
-            {[
-              { icon: Users, label: 'Total Users', value: '15,000+' },
-              { icon: Leaf, label: 'Total Paid Out', value: '₦50M+' },
-              { icon: TrendingUp, label: 'Farm Projects', value: '100+' },
-              { icon: CheckCircle, label: 'Investor Satisfaction', value: '98%' },
-            ].map((stat, idx) => (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {stats.map((stat, index) => (
               <motion.div
-                key={idx}
+                key={index}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: idx * 0.1 }}
                 viewport={{ once: true }}
-                className="text-center"
+                transition={{ delay: index * 0.1 }}
+                className="flex items-center justify-center gap-3 text-white"
               >
-                <stat.icon className="w-10 h-10 text-green-700 mx-auto mb-4" />
-                <p className="text-3xl font-bold text-gray-900 mb-2">{stat.value}</p>
-                <p className="text-gray-600">{stat.label}</p>
+                <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                  <div className="text-white">{stat.icon}</div>
+                </div>
+                <div>
+                  <p className="text-xl md:text-2xl font-bold">{stat.value}</p>
+                  <p className="text-green-200 text-sm">{stat.label}</p>
+                </div>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Investment Plans Section */}
+      {/* Investment Plans */}
       <section id="plans" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               Investment Plans
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Choose a plan that suits you and start earning consistent returns.
             </p>
           </div>
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-            {INVESTMENT_PLANS.map((plan, idx) => (
+            {investmentPlans.map((plan, index) => (
               <motion.div
-                key={plan.id}
-                initial={{ opacity: 0, y: 30 }}
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: idx * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100"
+                transition={{ delay: index * 0.1 }}
+                className="relative"
               >
-                <div className={`w-12 h-12 ${plan.color} rounded-xl flex items-center justify-center text-white mb-4`}>
-                  {plan.name.charAt(0)}
-                </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                <p className="text-gray-500 text-sm mb-4">{plan.description}</p>
-                <div className="space-y-3 mb-6">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 text-sm">Minimum Investment</span>
-                    <span className="font-semibold">{formatCurrency(plan.minInvestment)}</span>
-                  </div>
-                  {plan.maxInvestment && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-500 text-sm">Maximum Investment</span>
-                      <span className="font-semibold">{formatCurrency(plan.maxInvestment)}</span>
+                <Card className={`h-full transition-all duration-300 ${
+                    plan.popular ? 'border-green-500 shadow-2xl shadow-green-700/10' :
+                    plan.featured ? 'border-2 bg-gradient-to-b from-green-900 to-green-800 text-white' :
+                    'border-gray-200 hover:border-green-300 hover:shadow-xl'
+                }`}>
+                  {plan.popular && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                      <Badge className="bg-green-600 text-white px-4 py-1.5 text-xs font-semibold shadow-lg uppercase tracking-wide">
+                        Most Popular
+                      </Badge>
                     </div>
                   )}
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 text-sm">ROI</span>
-                    <span className="font-semibold text-green-700">{plan.roi}% Total</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 text-sm">Duration</span>
-                    <span className="font-semibold">{plan.duration} Months</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500 text-sm">Bi-weekly Payout</span>
-                    <span className="font-semibold">{formatCurrency(plan.biWeeklyMin)}{plan.biWeeklyMax ? ` - ${formatCurrency(plan.biWeeklyMax)}` : '+'}</span>
-                  </div>
-                </div>
-                <Link href="/register">
-                  <Button className="w-full bg-green-700 hover:bg-green-800 text-white">
-                    Invest Now
-                  </Button>
-                </Link>
+                  {plan.featured && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                      <Badge className="bg-amber-500 text-white px-4 py-1.5 text-xs font-semibold shadow-lg uppercase tracking-wide flex items-center gap-1">
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                        </svg>
+                        Premium
+                      </Badge>
+                    </div>
+                  )}
+                  <CardHeader className={`pt-10 pb-4 ${plan.featured ? 'text-white' : ''}`}>
+                    <div className="flex justify-center mb-4">
+                      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${
+                        plan.featured ? 'bg-gradient-to-br from-amber-400 to-amber-600' :
+                        plan.popular ? 'bg-gradient-to-br from-green-100 to-green-200' :
+                        'bg-gradient-to-br from-gray-100 to-gray-200'
+                      }`}>
+                        <Leaf className={`w-8 h-8 ${plan.featured ? 'text-white' : plan.popular ? 'text-green-700' : 'text-gray-600'}`} />
+                      </div>
+                    </div>
+                    <CardTitle className={`text-xl font-bold text-center ${plan.featured ? 'text-white' : 'text-gray-900'}`}>{plan.name}</CardTitle>
+                    <CardDescription className={`text-center ${plan.featured ? 'text-green-200' : 'text-gray-500'}`}>{plan.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className={`text-center py-4 rounded-2xl border ${
+                        plan.featured ? 'bg-white/10 border-white/20' : 'bg-white border-gray-100'
+                    }`}>
+                      <p className={`text-xs font-medium mb-2 ${plan.featured ? 'text-green-200' : 'text-gray-500'}`}>Minimum Investment</p>
+                      <p className={`text-2xl font-bold ${plan.featured ? 'text-amber-300' : 'text-gray-900'}`}>
+                        ₦{plan.min.toLocaleString()}
+                      </p>
+                    </div>
+
+                    <div className="space-y-3">
+                      {plan.features.map((feature, i) => (
+                        <div key={i} className={`flex items-center gap-2 text-sm ${plan.featured ? 'text-green-100' : 'text-gray-700'}`}>
+                          <CheckCircle2 className={`w-4 h-4 flex-shrink-0 ${plan.featured ? 'text-amber-300' : 'text-green-600'}`} />
+                          <span>{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <Link href="/register">
+                      <Button className={`w-full h-12 ${
+                          plan.featured ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white' :
+                          plan.popular ? 'bg-gradient-to-r from-green-700 to-green-800 hover:from-green-800 hover:to-green-900 text-white' :
+                          'bg-green-700 hover:bg-green-800 text-white'
+                      }`}>
+                        Invest Now
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
               </motion.div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Categories Section */}
-      <section id="categories" className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Investment Categories
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Invest in ongoing farm projects and earn great returns.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {INVESTMENT_CATEGORIES.map((category, idx) => (
-              <motion.div
-                key={category.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: idx * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-gray-50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300"
-              >
-                <div className="text-5xl mb-4">{category.icon}</div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{category.name}</h3>
-                <ul className="space-y-2">
-                  {category.items.map((item, i) => (
-                    <li key={i} className="text-gray-600 text-sm flex items-center">
-                      <CheckCircle className="w-4 h-4 text-green-600 mr-2" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="about" className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-                Why Choose <span className="text-green-700">AGEC?</span>
-              </h2>
-              <div className="space-y-6">
-                {[
-                  { icon: Shield, title: 'Secure & Transparent', desc: 'Your investments are protected with bank-level security and complete transparency.' },
-                  { icon: Zap, title: 'Fast Returns', desc: 'Receive bi-weekly payouts directly to your wallet.' },
-                  { icon: Leaf, title: 'Real Assets', desc: 'Every investment is backed by real agricultural projects.' },
-                  { icon: TrendingUp, title: 'High ROI', desc: 'Earn up to 50% returns on your investment.' },
-                ].map((feature, idx) => (
-                  <div key={idx} className="flex gap-4">
-                    <div className="bg-green-100 p-3 rounded-xl h-fit">
-                      <feature.icon className="w-6 h-6 text-green-700" />
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900 mb-1">{feature.title}</h4>
-                      <p className="text-gray-600">{feature.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="relative">
-              <img
-                src="https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=modern%20agricultural%20farm%20with%20crops%20and%20happy%20farmers&image_size=landscape_16_9"
-                alt="Farmers"
-                className="rounded-3xl shadow-xl"
-              />
-            </div>
           </div>
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="py-20 bg-white">
+      <section id="about" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
               How It Works
             </h2>
           </div>
-          <div className="grid md:grid-cols-4 gap-8">
-            {[
-              { step: 1, title: 'Register Account', desc: 'Create your account in a few simple steps.' },
-              { step: 2, title: 'Fund Wallet', desc: 'Deposit funds using our secure payment options.' },
-              { step: 3, title: 'Choose Investment', desc: 'Select an investment plan that works for you.' },
-              { step: 4, title: 'Earn & Withdraw', desc: 'Receive bi-weekly earnings and withdraw anytime.' },
-            ].map((step, idx) => (
+
+          <div className="grid md:grid-cols-4 gap-8 relative">
+            {howItWorks.map((step, index) => (
               <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 30 }}
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: idx * 0.1 }}
                 viewport={{ once: true }}
-                className="text-center relative"
+                transition={{ delay: index * 0.1 }}
+                className="relative text-center"
               >
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-green-700">{step.step}</span>
+                <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center border-4 border-green-50">
+                  <div className="text-green-700">{step.icon}</div>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">{step.title}</h3>
-                <p className="text-gray-600 text-sm">{step.desc}</p>
-                {idx < 3 && (
-                  <div className="hidden md:block absolute top-8 right-0 w-full h-0.5 bg-gradient-to-r from-green-300 to-transparent translate-x-1/2" />
+                <h3 className="text-lg font-bold text-gray-900 mb-2">{index + 1}. {step.title}</h3>
+                <p className="text-gray-600">{step.description}</p>
+
+                {index < howItWorks.length - 1 && (
+                  <div className="hidden md:block absolute top-10 -right-4 w-8 h-0.5 bg-gradient-to-r from-green-400 to-green-200" />
                 )}
               </motion.div>
             ))}
@@ -311,68 +500,247 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-green-800 to-green-900">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Ready to Grow Your Wealth Through Agriculture?
-          </h2>
-          <p className="text-green-100 mb-8 text-lg">
-            Join Agro Elite Community today and start your investment journey.
-          </p>
-          <Link href="/register">
-            <Button className="bg-white text-green-800 hover:bg-gray-100 text-lg px-8 py-6 h-auto">
-              Create Free Account
-            </Button>
-          </Link>
+      {/* Featured Farm Projects */}
+      <section id="projects" className="py-20 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Featured Farm Projects
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Invest in ongoing farm projects and earn great returns.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {farmProjects.map((project, index) => (
+              <motion.div
+                key={project.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card className="h-full overflow-hidden border-2 border-gray-100 hover:border-green-300 hover:shadow-xl transition-all duration-300">
+                  <div className="relative h-48">
+                    <img
+                      src={project.image}
+                      alt={project.name}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute top-4 right-4 bg-green-700 text-white px-3 py-1 rounded-lg text-xs font-semibold">
+                      {project.roi}% ROI
+                    </div>
+                  </div>
+                  <CardContent className="pt-6">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900">{project.name}</h3>
+                        <p className="text-gray-500 text-sm">{project.location}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                      <div className="text-center p-3 bg-green-50 rounded-xl">
+                        <p className="text-gray-500 text-xs mb-1">Investment</p>
+                        <p className="font-bold text-gray-900 text-sm">{project.amount}</p>
+                      </div>
+                      <div className="text-center p-3 bg-green-50 rounded-xl">
+                        <p className="text-gray-500 text-xs mb-1">ROI</p>
+                        <p className="font-bold text-green-700 text-sm">{project.roi}%</p>
+                      </div>
+                      <div className="text-center p-3 bg-green-50 rounded-xl">
+                        <p className="text-gray-500 text-xs mb-1">Duration</p>
+                        <p className="font-bold text-gray-900 text-sm">{project.duration}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-sm text-gray-600 flex items-center gap-2">
+                        <div className="flex -space-x-2">
+                          {[1, 2, 3].map(i => (
+                            <div key={i} className="w-6 h-6 rounded-full bg-gray-300 border-2 border-white" />
+                          ))}
+                        </div>
+                        {project.spotsLeft} spots left
+                      </span>
+                      <span className="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">
+                        Active
+                      </span>
+                    </div>
+
+                    <Link href="/register">
+                      <Button className="w-full h-12 bg-green-700 hover:bg-green-800 text-white">
+                        View Project
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section id="testimonials" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              What Our Investors Say
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card className="h-full border-2 border-gray-100 hover:border-green-200 hover:shadow-xl transition-all duration-300">
+                  <CardContent className="pt-8">
+                    <div className="flex gap-1 mb-6">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="w-5 h-5 text-amber-400 fill-amber-400" />
+                      ))}
+                    </div>
+                    <p className="text-gray-700 mb-8 leading-relaxed">"{testimonial.text}"</p>
+                    <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
+                      <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                        {testimonial.avatar}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900">{testimonial.name}</p>
+                        <p className="text-sm text-gray-500">{testimonial.role}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-20 bg-gradient-to-br from-green-800 to-green-900">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="text-white">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                Ready to Grow Your Wealth <br />Through Agriculture?
+              </h2>
+              <p className="text-green-100 text-lg mb-8 leading-relaxed">
+                Join Agro Elite Community today and start your investment journey. Create your free account now!
+              </p>
+              <Link href="/register">
+                <Button className="h-14 px-10 text-lg bg-white text-green-800 hover:bg-green-50 shadow-xl">
+                  Create Free Account
+                </Button>
+              </Link>
+            </div>
+            <div className="flex justify-center">
+              <div className="w-80 h-80 relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-green-400/20 to-transparent rounded-full blur-3xl" />
+                <img
+                  src="https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&q=80&w=800"
+                  alt="Seedling growing in soil"
+                  className="relative w-full h-full object-cover rounded-3xl shadow-2xl shadow-black/30"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer id="contact" className="bg-gray-900 text-gray-300 py-16">
+      <footer className="bg-gray-900 text-white pt-16 pb-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Leaf className="w-6 h-6 text-green-500" />
-                <span className="text-2xl font-bold text-white">AGEC</span>
-              </div>
-              <p className="text-gray-400 mb-4">
-                Building wealth, growing farms, feeding nations.
+          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12 mb-12">
+            <div className="lg:col-span-2">
+              <Link href="/" className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-600 to-green-800 rounded-2xl flex items-center justify-center">
+                  <Leaf className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <span className="text-2xl font-bold">AGEC</span>
+                  <p className="text-xs text-gray-400 font-medium">Agro Elite Community</p>
+                </div>
+              </Link>
+              <p className="text-gray-400 mb-6 leading-relaxed">
+                Connecting investors with profitable agricultural opportunities while promoting food production, job creation, and sustainable farming.
               </p>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 text-gray-400">
+                  <MapPin className="w-5 h-5 text-green-500" />
+                  <span className="text-sm">Lagos, Nigeria</span>
+                </div>
+                <div className="flex items-center gap-3 text-gray-400">
+                  <Mail className="w-5 h-5 text-green-500" />
+                  <span className="text-sm">hello@agec.ng</span>
+                </div>
+                <div className="flex items-center gap-3 text-gray-400">
+                  <Phone className="w-5 h-5 text-green-500" />
+                  <span className="text-sm">+234 800 000 0000</span>
+                </div>
+              </div>
             </div>
+
             <div>
-              <h4 className="text-white font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-green-500 transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-green-500 transition-colors">Our Mission</a></li>
-                <li><a href="#" className="hover:text-green-500 transition-colors">How It Works</a></li>
-                <li><a href="#" className="hover:text-green-500 transition-colors">Contact</a></li>
-                <li><a href="#" className="hover:text-green-500 transition-colors">Blog</a></li>
+              <h4 className="font-semibold text-lg mb-6">Company</h4>
+              <ul className="space-y-3">
+                <li><Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">About Us</Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Our Mission</Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">How It Works</Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Blog</Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Careers</Link></li>
               </ul>
             </div>
+
             <div>
-              <h4 className="text-white font-semibold mb-4">Support</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-green-500 transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-green-500 transition-colors">Contact Us</a></li>
-                <li><a href="#" className="hover:text-green-500 transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-green-500 transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-green-500 transition-colors">FAQ</a></li>
+              <h4 className="font-semibold text-lg mb-6">Support</h4>
+              <ul className="space-y-3">
+                <li><Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Help Center</Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Contact Us</Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Terms of Service</Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Privacy Policy</Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">FAQ</Link></li>
               </ul>
             </div>
+
             <div>
-              <h4 className="text-white font-semibold mb-4">Invest</h4>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-green-500 transition-colors">Investment Plans</a></li>
-                <li><a href="#" className="hover:text-green-500 transition-colors">Farm Projects</a></li>
-                <li><a href="#" className="hover:text-green-500 transition-colors">Referral Program</a></li>
-                <li><a href="#" className="hover:text-green-500 transition-colors">Withdrawals</a></li>
+              <h4 className="font-semibold text-lg mb-6">Invest</h4>
+              <ul className="space-y-3 mb-8">
+                <li><Link href="#plans" className="text-gray-400 hover:text-white transition-colors text-sm">Investment Plans</Link></li>
+                <li><Link href="#projects" className="text-gray-400 hover:text-white transition-colors text-sm">Farm Projects</Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Referral Program</Link></li>
+                <li><Link href="#" className="text-gray-400 hover:text-white transition-colors text-sm">Withdrawal</Link></li>
               </ul>
+
+              <h4 className="font-semibold text-lg mb-6">Follow Us</h4>
+              <p className="text-gray-400 text-sm mb-4">Subscribe to our newsletter</p>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  placeholder="Your email"
+                  className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-sm text-white focus:outline-none focus:border-green-500"
+                />
+                <Button className="bg-green-700 hover:bg-green-800">
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
           </div>
-          <div className="border-t border-gray-800 mt-12 pt-8 text-center text-sm">
-            <p>&copy; 2024 Agro Elite Community (AGEC). All rights reserved.</p>
+
+          <div className="border-t border-gray-800 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <p className="text-gray-500 text-sm">© 2024 Agro Elite Community (AGEC). All rights reserved.</p>
+              <p className="text-gray-500 text-sm">Building wealth. Growing farms. Feeding nations.</p>
+            </div>
           </div>
         </div>
       </footer>

@@ -12,6 +12,7 @@ const config: Config = {
         background: "var(--background)",
         foreground: "var(--foreground)",
         primary: {
+          DEFAULT: "#16a34a",
           50: "#f0fdf4",
           100: "#dcfce7",
           200: "#bbf7d0",
@@ -22,7 +23,17 @@ const config: Config = {
           700: "#15803d",
           800: "#166534",
           900: "#14532d",
+          foreground: "#ffffff",
         },
+        secondary: {
+          DEFAULT: "#f1f5f9",
+          foreground: "#0f172a",
+        },
+        destructive: {
+          DEFAULT: "#ef4444",
+          foreground: "#ffffff",
+        },
+        ring: "#16a34a",
         gold: {
           50: "#fefce8",
           100: "#fef9c3",
