@@ -2,9 +2,8 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
-import { auth, db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
-import { UserData, getUserData } from '@/lib/firebaseServices';
+import { auth } from '@/lib/firebase';
+import { UserData, getUserData, createUser } from '@/lib/firebaseServices';
 
 interface AuthContextType {
   user: User | null;
@@ -33,23 +32,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(firebaseUser);
       
       if (firebaseUser) {
-        // Check if user has a document in Firestore, create if not
-        const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-        if (!userDoc.exists()) {
-          await setDoc(doc(db, 'users', firebaseUser.uid), {
-            email: firebaseUser.email,
-            displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0],
-            createdAt: Timestamp.now(),
-            investments: [],
-            wallet: {
-              balance: 0,
-              totalEarnings: 0,
-              totalInvested: 0,
-            },
-            referrals: [],
-            kycStatus: 'pending',
-          });
-        }
         await fetchUserData(firebaseUser.uid);
       } else {
         setUserData(null);
@@ -69,20 +51,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(userCredential.user, { displayName: name });
     
-    // Create user document in Firestore
-    await setDoc(doc(db, 'users', userCredential.user.uid), {
-      email: email,
-      displayName: name,
-      createdAt: Timestamp.now(),
-      investments: [],
-      wallet: {
-        balance: 0,
-        totalEarnings: 0,
-        totalInvested: 0,
-      },
-      referrals: [],
-      kycStatus: 'pending',
-    });
+    // Create user document in Firestore using our service function
+    await createUser(
+      userCredential.user.uid,
+      email,
+      name
+    );
   };
 
   const logout = async () => {

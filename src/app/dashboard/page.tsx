@@ -29,10 +29,11 @@ export default function DashboardPage() {
     );
   }
 
-  const totalInvested = userData?.wallet.totalInvested || 0;
-  const totalEarnings = userData?.wallet.totalEarnings || 0;
-  const availableBalance = userData?.wallet.balance || 0;
-  const userInvestments = userData?.investments || [];
+  const totalInvested = userData?.totalInvested || 0;
+  const totalEarnings = userData?.totalEarnings || 0;
+  const availableBalance = userData?.walletBalance || 0;
+  // For now, we'll use sample investments - we'll integrate real data later
+  const userInvestments = [];
   const userName = user?.displayName || user?.email?.split('@')[0] || 'User';
 
   return (
@@ -159,31 +160,9 @@ export default function DashboardPage() {
             <CardTitle>Upcoming Withdrawal</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {userInvestments.length > 0 ? (
-              <div className="bg-green-50 rounded-xl p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Next Withdrawal Date</p>
-                    <p className="font-semibold text-gray-900">
-                      {new Date(userInvestments[0].nextPayoutDate.toDate()).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-                <div className="border-t border-green-100 pt-3">
-                  <p className="text-sm text-gray-600">Est. Payout Amount</p>
-                  <p className="text-2xl font-bold text-green-800">
-                    {formatCurrency((userInvestments[0].amount * userInvestments[0].roi / 100) / (userInvestments[0].durationMonths * 2))}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-500">Start investing to receive payouts!</p>
-              </div>
-            )}
+            <div className="text-center py-8">
+              <p className="text-gray-500">Start investing to receive payouts!</p>
+            </div>
             <div className="text-center text-sm text-gray-500">
               <p>Frequency: Every 2 Weeks</p>
             </div>
@@ -202,29 +181,11 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {userInvestments.slice(0, 4).map((investment) => (
-                <div key={investment.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                      <Briefcase className="w-6 h-6 text-green-700" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-gray-900">{investment.planName}</p>
-                      <p className="text-sm text-gray-500">{new Date(investment.startDate.toDate()).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-gray-900">{formatCurrency(investment.amount)}</p>
-                    <p className="text-sm text-green-600 flex items-center justify-end">
-                      <CheckCircle className="w-4 h-4 mr-1" />
-                      Active
-                    </p>
-                  </div>
-                </div>
-              ))}
-              {userInvestments.length === 0 && (
-                <div className="text-center py-8 text-gray-500">No investments yet</div>
-              )}
+              {/* For now, show a message since we need to integrate real investment data */}
+            <div className="text-center py-8 text-gray-500">
+              <p>No investments yet</p>
+              <p className="text-sm mt-2">Start investing to see your investments here</p>
+            </div>
             </div>
           </CardContent>
         </Card>
