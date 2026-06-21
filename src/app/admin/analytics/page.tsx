@@ -103,10 +103,10 @@ export default function AdminAnalyticsPage() {
                 <BarChart data={investmentGrowthData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="month" stroke="#6b7280" />
-                  <YAxis stroke="#6b7280" tickFormatter={(value) => `₦${value/1000000}M`} />
+                  <YAxis stroke="#6b7280" tickFormatter={(value: any) => `₦${value/1000000}M`} />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-                    formatter={(value: number) => [`₦${value.toLocaleString()}`, 'Investments']}
+                    formatter={(value: any) => [`₦${value.toLocaleString()}`, 'Investments']}
                   />
                   <Bar dataKey="amount" fill="#16a34a" radius={[4, 4, 0, 0]} />
                 </BarChart>

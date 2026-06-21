@@ -130,10 +130,10 @@ export default function AdminDashboardPage() {
                 <BarChart data={revenueData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="month" stroke="#6b7280" fontSize={12} />
-                  <YAxis stroke="#6b7280" fontSize={12} tickFormatter={(value) => `₦${value/1000000}M`} />
+                  <YAxis stroke="#6b7280" fontSize={12} tickFormatter={(value: any) => `₦${value/1000000}M`} />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-                    formatter={(value: number) => formatCurrency(value)}
+                    formatter={(value: any) => formatCurrency(value)}
                   />
                   <Bar dataKey="revenue" fill="#16a34a" name="Revenue" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="investments" fill="#059669" name="Investments" radius={[4, 4, 0, 0]} />

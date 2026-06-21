@@ -143,10 +143,10 @@ export default function DashboardPage() {
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="name" stroke="#6b7280" fontSize={12} />
-                  <YAxis stroke="#6b7280" fontSize={12} tickFormatter={(value) => `₦${value/1000}k`} />
+                  <YAxis stroke="#6b7280" fontSize={12} tickFormatter={(value: any) => `₦${value/1000}k`} />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-                    formatter={(value: number) => formatCurrency(value)}
+                    formatter={(value: any) => formatCurrency(value)}
                   />
                   <Line type="monotone" dataKey="earnings" stroke="#16a34a" strokeWidth={3} dot={{ fill: '#16a34a', r: 4 }} />
                 </LineChart>
