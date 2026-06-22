@@ -45,8 +45,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Sidebar */}
         <aside className={`
-          fixed lg:static inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-green-800 to-green-900 text-white
-          transform transition-transform duration-300 lg:transform-none
+          fixed lg:static inset-y-0 left-0 z-50 w-72 sm:w-64 bg-gradient-to-b from-green-800 to-green-900 text-white
+          transform transition-transform duration-300 lg:transform-none overflow-y-auto max-h-screen
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
           <div className="p-6 border-b border-green-700">
@@ -82,7 +82,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             })}
           </nav>
 
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-green-700">
+          <div className="relative mt-8 p-4 border-t border-green-700">
             <div className="bg-green-700/30 rounded-2xl p-4 mb-4">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-700 rounded-2xl flex items-center justify-center">
@@ -113,8 +113,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Main content */}
         <div className="lg:ml-64">
           {/* Top navigation */}
-          <header className="bg-white border-b border-gray-100 shadow-sm px-6 py-4 sticky top-0 z-30">
-            <div className="flex items-center justify-between">
+          <header className="bg-white border-b border-gray-100 shadow-sm px-4 sm:px-6 py-4 sticky top-0 z-30">
+            <div className="flex items-center justify-between gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
                 className="lg:hidden p-2 hover:bg-gray-100 rounded-lg"
@@ -133,7 +133,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </svg>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 sm:gap-4">
                 <button className="relative p-2.5 hover:bg-gray-100 rounded-xl transition-colors">
                   <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -145,7 +145,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <p className="text-sm font-semibold text-gray-900">{user?.displayName || user?.email?.split('@')[0]}</p>
                     <p className="text-xs text-green-600 font-medium">ID: {user?.uid?.slice(0, 8).toUpperCase()}</p>
                   </div>
-                  <div className="w-11 h-11 bg-gradient-to-br from-green-600 to-green-800 rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                  <div className="w-10 h-10 sm:w-11 h-11 bg-gradient-to-br from-green-600 to-green-800 rounded-xl sm:rounded-2xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
                     {(user?.displayName?.[0] || user?.email?.[0]?.toUpperCase())}
                   </div>
                 </div>
@@ -154,7 +154,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </header>
 
           {/* Page content */}
-          <main className="p-6">
+          <main className="p-4 sm:p-6">
             {children}
           </main>
         </div>
