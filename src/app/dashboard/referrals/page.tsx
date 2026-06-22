@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/utils';
 import { Users, Copy, CheckCircle, Share2, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
 const referrals = [
   { id: 1, name: 'Jane Smith', email: 'jane@example.com', joined: '2024-05-10', status: 'Active', earned: 5000 },
@@ -14,13 +15,22 @@ const referrals = [
 
 export default function ReferralsPage() {
   const [copied, setCopied] = useState(false);
+  const { userData } = useAuth();
 
-  const referralLink = 'https://agec.ng/ref/john123';
+  const referralLink = userData?.referralCode 
+    ? `https://agec.ng/ref/${userData.referralCode}` 
+    : 'https://agec.ng';
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(referralLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(referralLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+      // Fallback: alert the user if copy fails
+      alert('Could not copy automatically. Please manually copy the link.');
+    }
   };
 
   return (

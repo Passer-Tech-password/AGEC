@@ -175,12 +175,17 @@ export async function createUser(
       totalEarnings: 0,
       totalWithdrawn: 0,
       referralCode,
-      referrerId,
       createdAt: Timestamp.now(),
       updatedAt: Timestamp.now(),
     };
 
-    await setDoc(doc(db, "users", uid), userData);
+    // Only include referrerId in the Firestore doc if it's defined
+    const firestoreData: any = { ...userData };
+    if (referrerId) {
+      firestoreData.referrerId = referrerId;
+    }
+
+    await setDoc(doc(db, "users", uid), firestoreData);
 
     // If there's a referrer, create a referral record
     if (referrerId) {
