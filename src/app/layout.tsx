@@ -47,8 +47,8 @@ export const metadata: Metadata = {
     title: "AGEC"
   },
   icons: [
-    { rel: "apple-touch-icon", url: "/icon-192.png" },
-    { rel: "icon", url: "/icon-192.png" },
+    { rel: "apple-touch-icon", url: "/icon-192.svg" },
+    { rel: "icon", url: "/icon-192.svg" },
   ],
 };
 
