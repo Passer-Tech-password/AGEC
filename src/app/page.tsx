@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import {
   Leaf,
-  TrendingUp,
   Users,
   ShieldCheck,
   ArrowRight,
@@ -30,128 +29,76 @@ import {
   User
 } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-
-const investmentPlans = [
-  {
-    name: 'Starter Plan',
-    description: 'Perfect for new investors',
-    min: 20000,
-    max: 49999,
-    roi: 18,
-    duration: '3 Months',
-    biWeeklyPayout: '₦1,500 - ₦3,000',
-    popular: false,
-    featured: false,
-    features: ['18% ROI', '3 Months Duration', 'Bi-weekly Payouts', '24/7 Support']
-  },
-  {
-    name: 'Bronze Plan',
-    description: 'Grow your investment steadily',
-    min: 50000,
-    max: 99999,
-    roi: 24,
-    duration: '4 Months',
-    biWeeklyPayout: '₦3,500 - ₦6,000',
-    popular: false,
-    featured: false,
-    features: ['24% ROI', '4 Months Duration', 'Bi-weekly Payouts', 'Priority Support']
-  },
-  {
-    name: 'Silver Plan',
-    description: 'Balanced investment option',
-    min: 100000,
-    max: 249999,
-    roi: 30,
-    duration: '6 Months',
-    biWeeklyPayout: '₦7,500 - ₦15,000',
-    popular: true,
-    featured: false,
-    features: ['30% ROI', '6 Months Duration', 'Bi-weekly Payouts', 'Dedicated Manager']
-  },
-  {
-    name: 'Gold Plan',
-    description: 'Maximize your returns',
-    min: 250000,
-    max: 499999,
-    roi: 40,
-    duration: '9 Months',
-    biWeeklyPayout: '₦15,000 - ₦30,000',
-    popular: false,
-    featured: false,
-    features: ['40% ROI', '9 Months Duration', 'Bi-weekly Payouts', 'VIP Support Access']
-  },
-  {
-    name: 'Elite Plan',
-    description: 'For serious investors',
-    min: 500000,
-    max: null,
-    roi: 50,
-    duration: '12 Months',
-    biWeeklyPayout: '₦35,000+',
-    popular: false,
-    featured: true,
-    features: ['50% ROI', '12 Months Duration', 'Bi-weekly Payouts', 'Personal Account Manager', 'Exclusive Deals']
-  },
-];
-
-const howItWorks = [
-  { icon: <User className="w-8 h-8" />, title: 'Register Account', description: 'Create your account in a few simple steps.' },
-  { icon: <Wallet className="w-8 h-8" />, title: 'Fund Wallet', description: 'Deposit funds using our payment options.' },
-  { icon: <Sprout className="w-8 h-8" />, title: 'Choose Investment', description: 'Select from our amazing investment plans.' },
-  { icon: <PiggyBank className="w-8 h-8" />, title: 'Earn & Withdraw', description: 'Earn payouts and withdraw every 2 weeks.' },
-];
-
-const farmProjects = [
-  {
-    id: 1,
-    name: 'Poultry Farm',
-    location: 'Ogun State',
-    amount: '₦500,000',
-    roi: 78,
-    duration: '24 Days',
-    spotsLeft: 12,
-    image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&q=80&w=800'
-  },
-  {
-    id: 2,
-    name: 'Rice Farm',
-    location: 'Kebbi State',
-    amount: '₦800,000',
-    roi: 60,
-    duration: '24 Days',
-    spotsLeft: 8,
-    image: 'https://images.unsplash.com/photo-1574484284002-952d92456975?auto=format&fit=crop&q=80&w=800'
-  },
-  {
-    id: 3,
-    name: 'Fish Farm',
-    location: 'Lagos State',
-    amount: '₦300,000',
-    roi: 80,
-    duration: '10 Days',
-    spotsLeft: 25,
-    image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&q=80&w=800'
-  },
-];
-
-const testimonials = [
-  { name: 'Adewale T.', role: 'Investor since 2023', text: 'AGEC has been the best investment decision I made. Consistent returns and withdrawals are always on time.', rating: 5, avatar: 'A' },
-  { name: 'Blessing O.', role: 'Investor since 2024', text: 'Transparent platform with genuine farm projects. I love seeing my money grow safely.', rating: 5, avatar: 'B' },
-  { name: 'Chidi E.', role: 'Investor since 2023', text: 'Customer support is excellent! They respond promptly and help with all my inquiries.', rating: 5, avatar: 'C' },
-];
-
-const stats = [
-  { value: '₦250M+', label: 'Total Invested', icon: <BarChart3 className="w-6 h-6" /> },
-  { value: '₦95M+', label: 'Total Paid Out', icon: <PiggyBank className="w-6 h-6" /> },
-  { value: '100+', label: 'Farm Projects', icon: <Leaf className="w-6 h-6" /> },
-  { value: '98%', label: 'Investor Satisfaction', icon: <CheckCircle2 className="w-6 h-6" /> },
-];
+import { getInvestmentPlans, getFarmProjects, InvestmentPlanData, FarmProject } from '@/lib/firebaseServices';
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [testimonialIndex, setTestimonialIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [plans, setPlans] = useState<InvestmentPlanData[]>([]);
+  const [projects, setProjects] = useState<FarmProject[]>([]);
+  const stats = { totalUsers: 1000, totalInvested: 250000000, totalWithdrawn: 95000000, totalEarnings: 0, pendingWithdrawals: 0, pendingDeposits: 0, pendingKYCs: 0 };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [plansData, projectsData] = await Promise.all([
+          getInvestmentPlans(),
+          getFarmProjects()
+        ]);
+        setPlans(plansData);
+        setProjects(projectsData);
+      } catch (err) {
+        console.error("Error fetching landing data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Fallback data if Firebase has none
+  const fallbackPlans = [
+    { id: '1', name: 'Starter Plan', description: 'Perfect for new investors', minInvestment: 20000, maxInvestment: 49999, roiPercentage: 18, durationDays: 90, biWeeklyPayout: 1500, popular: false, featured: false, features: ['18% ROI', '3 Months Duration', 'Bi-weekly Payouts', '24/7 Support'], active: true, createdAt: { toDate: () => new Date() } as any },
+    { id: '2', name: 'Bronze Plan', description: 'Grow your investment steadily', minInvestment: 50000, maxInvestment: 99999, roiPercentage: 24, durationDays: 120, biWeeklyPayout: 3500, popular: true, featured: false, features: ['24% ROI', '4 Months Duration', 'Bi-weekly Payouts', 'Priority Support'], active: true, createdAt: { toDate: () => new Date() } as any },
+    { id: '3', name: 'Silver Plan', description: 'Balanced investment option', minInvestment: 100000, maxInvestment: 249999, roiPercentage: 30, durationDays: 180, biWeeklyPayout: 7500, popular: true, featured: false, features: ['30% ROI', '6 Months Duration', 'Bi-weekly Payouts', 'Dedicated Manager'], active: true, createdAt: { toDate: () => new Date() } as any },
+    { id: '4', name: 'Gold Plan', description: 'Maximize your returns', minInvestment: 250000, maxInvestment: 499999, roiPercentage: 40, durationDays: 270, biWeeklyPayout: 15000, popular: false, featured: false, features: ['40% ROI', '9 Months Duration', 'Bi-weekly Payouts', 'VIP Support Access'], active: true, createdAt: { toDate: () => new Date() } as any },
+    { id: '5', name: 'Elite Plan', description: 'For serious investors', minInvestment: 500000, maxInvestment: undefined, roiPercentage: 50, durationDays: 365, biWeeklyPayout: 35000, popular: false, featured: true, features: ['50% ROI', '12 Months Duration', 'Bi-weekly Payouts', 'Personal Account Manager', 'Exclusive Deals'], active: true, createdAt: { toDate: () => new Date() } as any },
+  ];
+
+  const fallbackProjects = [
+    { id: '1', name: 'Poultry Farm', location: 'Ogun State', description: 'Commercial poultry farming', imageUrl: './images/poultry-farm.jpg', investmentAmount: 500000, roiPercentage: 78, durationDays: 24, spotsLeft: 12, active: true, createdAt: { toDate: () => new Date() } as any },
+    { id: '2', name: 'Rice Farm', location: 'Kebbi State', description: 'Large-scale rice cultivation', imageUrl: './images/rice-farm.jpg', investmentAmount: 800000, roiPercentage: 60, durationDays: 24, spotsLeft: 8, active: true, createdAt: { toDate: () => new Date() } as any },
+    { id: '3', name: 'Fish Farm', location: 'Lagos State', description: 'Aquaculture farming', imageUrl: './images/fish-farm.jpg', investmentAmount: 300000, roiPercentage: 80, durationDays: 10, spotsLeft: 25, active: true, createdAt: { toDate: () => new Date() } as any },
+  ];
+
+  const displayPlans = plans.length > 0 ? plans : fallbackPlans;
+  const displayProjects = projects.length > 0 ? projects : fallbackProjects;
+
+  const howItWorks = [
+    { icon: <User className="w-8 h-8" />, title: 'Register Account', description: 'Create your account in a few simple steps.' },
+    { icon: <Wallet className="w-8 h-8" />, title: 'Fund Wallet', description: 'Deposit funds using our payment options.' },
+    { icon: <Sprout className="w-8 h-8" />, title: 'Choose Investment', description: 'Select from our amazing investment plans.' },
+    { icon: <PiggyBank className="w-8 h-8" />, title: 'Earn & Withdraw', description: 'Earn payouts and withdraw every 2 weeks.' },
+  ];
+
+  const testimonials = [
+    { name: 'Adewale T.', role: 'Investor since 2023', text: 'AGEC has been the best investment decision I made. Consistent returns and withdrawals are always on time.', rating: 5, avatar: 'A' },
+    { name: 'Blessing O.', role: 'Investor since 2024', text: 'Transparent platform with genuine farm projects. I love seeing my money grow safely.', rating: 5, avatar: 'B' },
+    { name: 'Chidi E.', role: 'Investor since 2023', text: 'Customer support is excellent! They respond promptly and help with all my inquiries.', rating: 5, avatar: 'C' },
+  ];
+
+  const formatCurrency = (amount: number) => `₦${amount.toLocaleString()}`;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -272,7 +219,7 @@ export default function LandingPage() {
                   ))}
                 </div>
                 <div>
-                  <p className="font-semibold">Trusted by 5,000+ Investors</p>
+                  <p className="font-semibold">{stats.totalUsers.toLocaleString()}+ Investors</p>
                   <p className="text-green-200 text-sm">Join our community of smart investors growing with AGEC.</p>
                 </div>
               </div>
@@ -313,12 +260,12 @@ export default function LandingPage() {
                       <p className="text-green-200 text-xs font-medium">Total Earnings</p>
                       <span className="text-green-300 text-xs bg-green-800 px-2 py-0.5 rounded-full">+6.5%</span>
                     </div>
-                    <p className="text-2xl font-bold">₦120,000.00</p>
+                    <p className="text-2xl font-bold">{formatCurrency(stats.totalEarnings)}</p>
                     <p className="text-green-300 text-xs mt-1">This Month</p>
                   </div>
                   <div className="bg-white border-2 border-green-100 rounded-2xl p-5">
                     <p className="text-gray-500 text-xs font-medium mb-2">Available Balance</p>
-                    <p className="text-2xl font-bold text-gray-900">₦45,000.00</p>
+                    <p className="text-2xl font-bold text-gray-900">{formatCurrency(stats.totalInvested * 0.13)}</p>
                     <Button className="mt-2 w-full h-8 bg-green-700 hover:bg-green-800 text-white text-xs">
                       Withdraw
                     </Button>
@@ -327,9 +274,9 @@ export default function LandingPage() {
 
                 <div className="grid grid-cols-4 gap-3">
                   {[
-                    { label: 'Total', value: '₦350,000' },
-                    { label: 'Active', value: '8' },
-                    { label: 'Total Paid', value: '₦75,000' },
+                    { label: 'Total', value: formatCurrency(stats.totalInvested) },
+                    { label: 'Active', value: stats.totalUsers.toLocaleString() },
+                    { label: 'Total Paid', value: formatCurrency(stats.totalWithdrawn) },
                     { label: 'Referrals', value: '15' },
                   ].map((stat, i) => (
                     <div key={i} className="text-center p-3 bg-gray-50 rounded-xl border border-gray-100">
@@ -351,7 +298,12 @@ export default function LandingPage() {
       <section className="py-8 bg-gradient-to-r from-green-700 to-green-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((stat, index) => (
+            {[
+              { value: formatCurrency(stats.totalInvested), label: 'Total Invested', icon: <BarChart3 className="w-6 h-6" /> },
+              { value: formatCurrency(stats.totalWithdrawn), label: 'Total Paid Out', icon: <PiggyBank className="w-6 h-6" /> },
+              { value: `${stats.totalUsers.toLocaleString()}+`, label: 'Happy Investors', icon: <Users className="w-6 h-6" /> },
+              { value: '98%', label: 'Satisfaction Rate', icon: <CheckCircle2 className="w-6 h-6" /> },
+            ].map((stat, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
@@ -386,9 +338,9 @@ export default function LandingPage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-            {investmentPlans.map((plan, index) => (
+            {displayPlans.map((plan, index) => (
               <motion.div
-                key={index}
+                key={plan.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -436,7 +388,7 @@ export default function LandingPage() {
                     }`}>
                       <p className={`text-xs font-medium mb-2 ${plan.featured ? 'text-green-200' : 'text-gray-500'}`}>Minimum Investment</p>
                       <p className={`text-2xl font-bold ${plan.featured ? 'text-amber-300' : 'text-gray-900'}`}>
-                        ₦{plan.min.toLocaleString()}
+                        {formatCurrency(plan.minInvestment)}
                       </p>
                     </div>
 
@@ -513,7 +465,7 @@ export default function LandingPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {farmProjects.map((project, index) => (
+            {displayProjects.map((project, index) => (
               <motion.div
                 key={project.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -524,12 +476,12 @@ export default function LandingPage() {
                 <Card className="h-full overflow-hidden border-2 border-gray-100 hover:border-green-300 hover:shadow-xl transition-all duration-300">
                   <div className="relative h-48">
                     <img
-                      src={project.image}
+                      src={project.imageUrl}
                       alt={project.name}
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute top-4 right-4 bg-green-700 text-white px-3 py-1 rounded-lg text-xs font-semibold">
-                      {project.roi}% ROI
+                      {project.roiPercentage}% ROI
                     </div>
                   </div>
                   <CardContent className="pt-6">
@@ -543,15 +495,15 @@ export default function LandingPage() {
                     <div className="grid grid-cols-3 gap-4 mb-6">
                       <div className="text-center p-3 bg-green-50 rounded-xl">
                         <p className="text-gray-500 text-xs mb-1">Investment</p>
-                        <p className="font-bold text-gray-900 text-sm">{project.amount}</p>
+                        <p className="font-bold text-gray-900 text-sm">{formatCurrency(project.investmentAmount)}</p>
                       </div>
                       <div className="text-center p-3 bg-green-50 rounded-xl">
                         <p className="text-gray-500 text-xs mb-1">ROI</p>
-                        <p className="font-bold text-green-700 text-sm">{project.roi}%</p>
+                        <p className="font-bold text-green-700 text-sm">{project.roiPercentage}%</p>
                       </div>
                       <div className="text-center p-3 bg-green-50 rounded-xl">
                         <p className="text-gray-500 text-xs mb-1">Duration</p>
-                        <p className="font-bold text-gray-900 text-sm">{project.duration}</p>
+                        <p className="font-bold text-gray-900 text-sm">{project.durationDays} Days</p>
                       </div>
                     </div>
 
@@ -600,7 +552,7 @@ export default function LandingPage() {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className="h-full border-2 border-gray-100 hover:border-green-200 hover:shadow-xl transition-all duration-300">
+                <Card className="h-full border-2 border-gray-100 hover:border-green-300 hover:shadow-xl transition-all duration-300">
                   <CardContent className="pt-8">
                     <div className="flex gap-1 mb-6">
                       {[...Array(testimonial.rating)].map((_, i) => (

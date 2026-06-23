@@ -263,14 +263,31 @@ export async function getAllUsers(): Promise<UserData[]> {
  */
 export async function getInvestmentPlans(): Promise<InvestmentPlanData[]> {
   try {
-    const q = query(
+    // Try with orderBy first (requires index)
+    let q = query(
       collection(db, "investmentPlans"),
       where("active", "==", true),
       orderBy("minInvestment", "asc")
     );
-    const querySnapshot = await getDocs(q);
+    let querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as InvestmentPlanData));
-  } catch (error) {
+  } catch (error: any) {
+    // If that fails (missing index), try without orderBy
+    if (error.message.includes("requires an index")) {
+      try {
+        const q = query(
+          collection(db, "investmentPlans"),
+          where("active", "==", true)
+        );
+        const querySnapshot = await getDocs(q);
+        const plans = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as InvestmentPlanData));
+        // Sort them client-side
+        return plans.sort((a, b) => a.minInvestment - b.minInvestment);
+      } catch (fallbackError) {
+        console.error("Error fetching investment plans (fallback):", fallbackError);
+        return [];
+      }
+    }
     console.error("Error fetching investment plans:", error);
     return [];
   }
@@ -419,14 +436,35 @@ export async function getAllInvestments(): Promise<UserInvestment[]> {
  */
 export async function getFarmProjects(): Promise<FarmProject[]> {
   try {
-    const q = query(
+    // Try with orderBy first (requires index)
+    let q = query(
       collection(db, "farmProjects"),
       where("active", "==", true),
       orderBy("createdAt", "desc")
     );
-    const querySnapshot = await getDocs(q);
+    let querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as FarmProject));
-  } catch (error) {
+  } catch (error: any) {
+    // If that fails (missing index), try without orderBy
+    if (error.message.includes("requires an index")) {
+      try {
+        const q = query(
+          collection(db, "farmProjects"),
+          where("active", "==", true)
+        );
+        const querySnapshot = await getDocs(q);
+        const projects = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as FarmProject));
+        // Sort them client-side by createdAt descending
+        return projects.sort((a, b) => {
+          const aTime = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+          const bTime = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+          return bTime - aTime;
+        });
+      } catch (fallbackError) {
+        console.error("Error fetching farm projects (fallback):", fallbackError);
+        return [];
+      }
+    }
     console.error("Error fetching farm projects:", error);
     return [];
   }

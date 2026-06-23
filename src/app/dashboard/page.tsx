@@ -7,8 +7,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { TrendingUp, Wallet, Briefcase, Users, Leaf, Loader2, ArrowRight } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { getUserInvestments, getUserTransactions, UserInvestment, Transaction } from '@/lib/firebaseServices';
 
-// Sample data - will be replaced with real data
+// Sample chart data (can be replaced with real earnings data later)
 const chartData = [
   { name: 'May 1', earnings: 20000 },
   { name: 'May 8', earnings: 25000 },
@@ -17,24 +19,29 @@ const chartData = [
   { name: 'May 29', earnings: 45000 },
 ];
 
-const sampleInvestments = [
-  { id: 1, plan: 'Poultry Farm', amount: 50000, status: 'Active', date: 'May 15, 2024', roi: '24%' },
-  { id: 2, plan: 'Rice Farm', amount: 100000, status: 'Active', date: 'May 10, 2024', roi: '30%' },
-  { id: 3, plan: 'Fish Farm', amount: 75000, status: 'Active', date: 'May 5, 2024', roi: '28%' },
-  { id: 4, plan: 'Greenhouse', amount: 125000, status: 'Active', date: 'May 1, 2024', roi: '32%' },
-];
-
-const sampleTransactions = [
-  { id: 1, type: 'Withdrawal', amount: -15000, date: 'May 28, 2024', status: 'Completed' },
-  { id: 2, type: 'Investment', amount: -50000, date: 'May 15, 2024', status: 'Completed' },
-  { id: 3, type: 'Referral Bonus', amount: 2500, date: 'May 12, 2024', status: 'Completed' },
-  { id: 4, type: 'Withdrawal', amount: -10000, date: 'May 5, 2024', status: 'Completed' },
-];
-
 export default function DashboardPage() {
   const { user, userData, loading } = useAuth();
+  const [investments, setInvestments] = useState<UserInvestment[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [dataLoading, setDataLoading] = useState(true);
 
-  if (loading) {
+  useEffect(() => {
+    if (user) {
+      Promise.all([
+        getUserInvestments(user.uid),
+        getUserTransactions(user.uid, 4)
+      ]).then(([inv, tx]) => {
+        setInvestments(inv);
+        setTransactions(tx);
+        setDataLoading(false);
+      }).catch(err => {
+        console.error("Error fetching dashboard data:", err);
+        setDataLoading(false);
+      });
+    }
+  }, [user]);
+
+  if (loading || dataLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-12 h-12 text-green-700 animate-spin" />
@@ -42,12 +49,11 @@ export default function DashboardPage() {
     );
   }
 
-  // Mock data for demo purposes
-  const totalInvested = userData?.totalInvested || 350000;
-  const totalEarnings = userData?.totalEarnings || 120000;
-  const availableBalance = userData?.walletBalance || 45000;
-  const referralEarnings = 15000;
-  const totalWithdrawn = 75000;
+  const totalInvested = userData?.totalInvested || 0;
+  const totalEarnings = userData?.totalEarnings || 0;
+  const availableBalance = userData?.walletBalance || 0;
+  const referralEarnings = 0; // TODO: Fetch referral earnings later
+  const totalWithdrawn = userData?.totalWithdrawn || 0;
   
   const userName = user?.displayName || user?.email?.split('@')[0] || 'User';
 
@@ -88,7 +94,7 @@ export default function DashboardPage() {
             <div className="text-2xl sm:text-3xl font-bold text-gray-900">{formatCurrency(totalInvested)}</div>
             <p className="text-sm text-green-600 mt-2 flex items-center font-medium">
               <TrendingUp className="w-4 h-4 mr-1.5" />
-              {sampleInvestments.length} Active
+              {investments.length} Active
             </p>
           </CardContent>
         </Card>
@@ -210,23 +216,29 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {sampleInvestments.slice(0, 4).map((investment) => (
-                <div key={investment.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-gray-50 rounded-2xl hover:bg-green-50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center">
-                      <Leaf className="w-6 h-6 text-green-700" />
+              {investments.length === 0 ? (
+                <p className="text-center text-gray-500 py-8">No investments yet</p>
+              ) : (
+                investments.slice(0, 4).map((investment) => (
+                  <div key={investment.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-gray-50 rounded-2xl hover:bg-green-50 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center">
+                        <Leaf className="w-6 h-6 text-green-700" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-900">{investment.planName}</p>
+                        <p className="text-sm text-gray-500">
+                          {investment.startDate.toDate().toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-gray-900">{investment.plan}</p>
-                      <p className="text-sm text-gray-500">{investment.date}</p>
+                    <div className="text-right w-full sm:w-auto">
+                      <p className="font-bold text-gray-900">{formatCurrency(investment.amount)}</p>
+                      <p className="text-sm text-green-600 font-medium">{investment.roiPercentage}%</p>
                     </div>
                   </div>
-                  <div className="text-right w-full sm:w-auto">
-                    <p className="font-bold text-gray-900">{formatCurrency(investment.amount)}</p>
-                    <p className="text-sm text-green-600 font-medium">{investment.roi}</p>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
@@ -242,33 +254,39 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {sampleTransactions.map((transaction) => (
-                <div key={transaction.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-gray-50 rounded-2xl hover:bg-green-50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                      transaction.amount < 0 
-                        ? 'bg-gradient-to-br from-red-100 to-red-200' 
-                        : 'bg-gradient-to-br from-green-100 to-green-200'
-                    }`}>
-                      <Wallet className={`w-6 h-6 ${
+              {transactions.length === 0 ? (
+                <p className="text-center text-gray-500 py-8">No transactions yet</p>
+              ) : (
+                transactions.map((transaction) => (
+                  <div key={transaction.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-gray-50 rounded-2xl hover:bg-green-50 transition-colors">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                        transaction.amount < 0 
+                          ? 'bg-gradient-to-br from-red-100 to-red-200' 
+                          : 'bg-gradient-to-br from-green-100 to-green-200'
+                      }`}>
+                        <Wallet className={`w-6 h-6 ${
+                          transaction.amount < 0 ? 'text-red-700' : 'text-green-700'
+                        }`} />
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-900">{transaction.type}</p>
+                        <p className="text-sm text-gray-500">
+                          {transaction.createdAt.toDate().toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right w-full sm:w-auto">
+                      <p className={`font-bold ${
                         transaction.amount < 0 ? 'text-red-700' : 'text-green-700'
-                      }`} />
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-900">{transaction.type}</p>
-                      <p className="text-sm text-gray-500">{transaction.date}</p>
+                      }`}>
+                        {transaction.amount < 0 ? '-' : '+'}{formatCurrency(Math.abs(transaction.amount))}
+                      </p>
+                      <p className="text-sm text-green-600 font-medium">{transaction.status}</p>
                     </div>
                   </div>
-                  <div className="text-right w-full sm:w-auto">
-                    <p className={`font-bold ${
-                      transaction.amount < 0 ? 'text-red-700' : 'text-green-700'
-                    }`}>
-                      {transaction.amount < 0 ? '-' : '+'}{formatCurrency(Math.abs(transaction.amount))}
-                    </p>
-                    <p className="text-sm text-green-600 font-medium">{transaction.status}</p>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>

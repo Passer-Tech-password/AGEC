@@ -6,17 +6,67 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatCurrency } from '@/lib/utils';
 import { ArrowUpFromLine, BanknoteIcon, CheckCircle, Clock } from 'lucide-react';
-import { useState } from 'react';
-
-const withdrawalHistory = [
-  { id: 1, amount: 15000, date: '2024-05-20', status: 'Completed', bank: 'First Bank' },
-  { id: 2, amount: 10000, date: '2024-04-20', status: 'Completed', bank: 'GTBank' },
-  { id: 3, amount: 25000, date: '2024-03-15', status: 'Completed', bank: 'First Bank' },
-];
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { getUserWithdrawals, requestWithdrawal, WithdrawalRequest } from '@/lib/firebaseServices';
 
 export default function WithdrawalsPage() {
+  const { user, userData, refreshUserData } = useAuth();
+  const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
+  const [loading, setLoading] = useState(true);
   const [amount, setAmount] = useState('');
-  const [selectedBank, setSelectedBank] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [accountName, setAccountName] = useState('');
+  const [requestLoading, setRequestLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      getUserWithdrawals(user.uid).then(w => {
+        setWithdrawals(w);
+        setLoading(false);
+      }).catch(err => {
+        console.error("Error fetching withdrawals:", err);
+        setLoading(false);
+      });
+    }
+  }, [user]);
+
+  const handleRequestWithdrawal = async () => {
+    if (!user || !amount || !bankName || !accountNumber || !accountName) return;
+    const amt = parseFloat(amount);
+    if (isNaN(amt) || amt <= 0) return;
+    if (userData && amt > userData.walletBalance) {
+      alert('Insufficient balance');
+      return;
+    }
+
+    setRequestLoading(true);
+    try {
+      await requestWithdrawal(user.uid, amt, bankName, accountNumber, accountName);
+      await refreshUserData();
+      const newWithdrawals = await getUserWithdrawals(user.uid);
+      setWithdrawals(newWithdrawals);
+      setAmount('');
+      setBankName('');
+      setAccountNumber('');
+      setAccountName('');
+      alert('Withdrawal request submitted successfully!');
+    } catch (err) {
+      console.error("Error requesting withdrawal:", err);
+      alert('Failed to submit withdrawal request. Please try again.');
+    } finally {
+      setRequestLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -35,7 +85,7 @@ export default function WithdrawalsPage() {
           <CardContent>
             <div className="bg-green-50 rounded-xl p-4 mb-6">
               <p className="text-sm text-gray-600">Available Balance</p>
-              <p className="text-3xl font-bold text-green-800">{formatCurrency(45000)}</p>
+              <p className="text-3xl font-bold text-green-800">{formatCurrency(userData?.walletBalance || 0)}</p>
             </div>
             <div className="space-y-4">
               <div>
@@ -51,26 +101,50 @@ export default function WithdrawalsPage() {
                 <p className="text-sm text-gray-500 mt-1">Minimum withdrawal: ₦5,000</p>
               </div>
               <div>
-                <Label htmlFor="bank">Select Bank Account</Label>
-                <select
-                  id="bank"
-                  className="w-full mt-2 border border-gray-200 rounded-lg px-4 py-2"
-                  value={selectedBank}
-                  onChange={(e) => setSelectedBank(e.target.value)}
-                >
-                  <option value="">Select a bank account</option>
-                  <option value="first-bank">First Bank - 3012345678</option>
-                  <option value="gtbank">GTBank - 0587654321</option>
-                </select>
+                <Label htmlFor="bankName">Bank Name</Label>
+                <Input
+                  id="bankName"
+                  type="text"
+                  placeholder="e.g., First Bank"
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                  className="mt-2"
+                />
+              </div>
+              <div>
+                <Label htmlFor="accountNumber">Account Number</Label>
+                <Input
+                  id="accountNumber"
+                  type="text"
+                  placeholder="Enter account number"
+                  value={accountNumber}
+                  onChange={(e) => setAccountNumber(e.target.value)}
+                  className="mt-2"
+                />
+              </div>
+              <div>
+                <Label htmlFor="accountName">Account Name</Label>
+                <Input
+                  id="accountName"
+                  type="text"
+                  placeholder="Enter account name"
+                  value={accountName}
+                  onChange={(e) => setAccountName(e.target.value)}
+                  className="mt-2"
+                />
               </div>
               <div className="p-4 bg-amber-50 rounded-lg border border-amber-200">
                 <p className="text-sm text-amber-800">
                   <strong>Note:</strong> Withdrawals are processed within 24 hours. Bi-weekly payouts are automatic.
                 </p>
               </div>
-              <Button className="w-full bg-green-700 hover:bg-green-800 text-white">
+              <Button
+                className="w-full bg-green-700 hover:bg-green-800 text-white"
+                onClick={handleRequestWithdrawal}
+                disabled={requestLoading}
+              >
                 <ArrowUpFromLine className="w-4 h-4 mr-2" />
-                Request Withdrawal
+                {requestLoading ? 'Processing...' : 'Request Withdrawal'}
               </Button>
             </div>
           </CardContent>
@@ -84,18 +158,28 @@ export default function WithdrawalsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {withdrawalHistory.map((withdrawal) => (
-                <div key={withdrawal.id} className="p-4 border border-gray-200 rounded-xl flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-gray-900">{formatCurrency(withdrawal.amount)}</p>
-                    <p className="text-sm text-gray-500">{withdrawal.bank} • {new Date(withdrawal.date).toLocaleDateString()}</p>
+              {withdrawals.length === 0 ? (
+                <p className="text-center text-gray-500 py-8">No withdrawals yet</p>
+              ) : (
+                withdrawals.map((withdrawal) => (
+                  <div key={withdrawal.id} className="p-4 border border-gray-200 rounded-xl flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-gray-900">{formatCurrency(withdrawal.amount)}</p>
+                      <p className="text-sm text-gray-500">{withdrawal.bankName} • {withdrawal.createdAt.toDate().toLocaleDateString()}</p>
+                    </div>
+                    <span className={`flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium rounded-full ${
+                      withdrawal.status === 'approved' || withdrawal.status === 'paid'
+                        ? 'bg-green-100 text-green-700'
+                        : withdrawal.status === 'pending'
+                        ? 'bg-yellow-100 text-yellow-700'
+                        : 'bg-red-100 text-red-700'
+                    }`}>
+                      {withdrawal.status === 'pending' ? <Clock className="w-3 h-3" /> : <CheckCircle className="w-3 h-3" />}
+                      {withdrawal.status}
+                    </span>
                   </div>
-                  <span className="flex items-center gap-1 px-2.5 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full">
-                    <CheckCircle className="w-3 h-3" />
-                    {withdrawal.status}
-                  </span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </CardContent>
         </Card>

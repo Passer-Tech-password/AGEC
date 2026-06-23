@@ -1,0 +1,21 @@
+{
+  "name": "AGEC - Agro Elite Community",
+  "short_name": "AGEC",
+  "description": "Invest in verified agricultural projects and earn consistent returns while supporting food production and communities.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#15803d",
+  "icons": [
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

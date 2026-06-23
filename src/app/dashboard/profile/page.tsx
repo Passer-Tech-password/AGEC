@@ -4,8 +4,35 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { updateUserData } from '@/lib/firebaseServices';
 
 export default function ProfilePage() {
+  const { user, userData, refreshUserData } = useAuth();
+  const [fullName, setFullName] = useState(userData?.fullName || '');
+  const [phoneNumber, setPhoneNumber] = useState(userData?.phoneNumber || '');
+  const [loading, setLoading] = useState(false);
+
+  const handleSave = async () => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      await updateUserData(user.uid, {
+        fullName,
+        phoneNumber,
+      });
+      await refreshUserData();
+      alert('Profile updated successfully!');
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      alert('Failed to update profile. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -20,24 +47,40 @@ export default function ProfilePage() {
         <CardContent>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <Label htmlFor="firstName">First Name</Label>
-              <Input id="firstName" defaultValue="John" className="mt-2" />
-            </div>
-            <div>
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input id="lastName" defaultValue="Investor" className="mt-2" />
+              <Label htmlFor="fullName">Full Name</Label>
+              <Input
+                id="fullName"
+                defaultValue={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="mt-2"
+              />
             </div>
             <div>
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" defaultValue="john@example.com" className="mt-2" />
+              <Input
+                id="email"
+                type="email"
+                value={user?.email || ''}
+                disabled
+                className="mt-2 bg-gray-50"
+              />
             </div>
             <div>
-              <Label htmlFor="phone">Phone Number</Label>
-              <Input id="phone" defaultValue="+234 801 234 5678" className="mt-2" />
+              <Label htmlFor="phoneNumber">Phone Number</Label>
+              <Input
+                id="phoneNumber"
+                defaultValue={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                className="mt-2"
+              />
             </div>
           </div>
-          <Button className="mt-6 bg-green-700 hover:bg-green-800 text-white">
-            Save Changes
+          <Button
+            className="mt-6 bg-green-700 hover:bg-green-800 text-white"
+            onClick={handleSave}
+            disabled={loading}
+          >
+            {loading ? 'Saving...' : 'Save Changes'}
           </Button>
         </CardContent>
       </Card>

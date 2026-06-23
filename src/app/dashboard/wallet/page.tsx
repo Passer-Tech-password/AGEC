@@ -5,35 +5,126 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatCurrency } from '@/lib/utils';
-import { Wallet, Plus, ArrowUpFromLine, ArrowDownToLine, CreditCard, Copy, CheckCircle } from 'lucide-react';
-import { useState } from 'react';
-
-// Sample transaction history
-const transactions = [
-  { id: 1, type: 'Deposit', amount: 100000, date: '2024-05-20', status: 'Completed', method: 'Bank Transfer' },
-  { id: 2, type: 'Withdrawal', amount: -15000, date: '2024-05-18', status: 'Completed', method: 'Bank Transfer' },
-  { id: 3, type: 'Payout', amount: 7500, date: '2024-05-15', status: 'Completed', method: 'Automatic' },
-  { id: 4, type: 'Investment', amount: -50000, date: '2024-05-10', status: 'Completed', method: 'Wallet' },
-  { id: 5, type: 'Referral Bonus', amount: 2500, date: '2024-05-05', status: 'Completed', method: 'Automatic' },
-  { id: 6, type: 'Deposit', amount: 75000, date: '2024-04-28', status: 'Completed', method: 'Bank Transfer' },
-  { id: 7, type: 'Withdrawal', amount: -10000, date: '2024-04-20', status: 'Completed', method: 'Bank Transfer' },
-  { id: 8, type: 'Payout', amount: 5000, date: '2024-04-15', status: 'Completed', method: 'Automatic' },
-];
-
-const bankAccounts = [
-  { id: 1, bankName: 'First Bank', accountName: 'John Investor', accountNumber: '3012345678', status: 'Verified' },
-  { id: 2, bankName: 'GTBank', accountName: 'John Investor', accountNumber: '0587654321', status: 'Verified' },
-];
+import { Wallet as WalletIcon, Plus, ArrowUpFromLine, ArrowDownToLine, CreditCard, Copy, CheckCircle, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { getUserTransactions, getUserDeposits, requestDeposit, getUserWithdrawals, Transaction, DepositRequest, WithdrawalRequest } from '@/lib/firebaseServices';
 
 export default function WalletPage() {
+  const { user, userData, refreshUserData } = useAuth();
   const [activeTab, setActiveTab] = useState<'transactions' | 'bank-accounts'>('transactions');
   const [copied, setCopied] = useState(false);
+  const [showDepositModal, setShowDepositModal] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [deposits, setDeposits] = useState<DepositRequest[]>([]);
+  const [withdrawals, setWithdrawals] = useState<WithdrawalRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Deposit form state
+  const [depositAmount, setDepositAmount] = useState('');
+  const [depositPaymentMethod, setDepositPaymentMethod] = useState('Bank Transfer');
+  const [depositProofUrl, setDepositProofUrl] = useState('');
+  const [depositLoading, setDepositLoading] = useState(false);
+
+  // Withdraw form state
+  const [withdrawAmount, setWithdrawAmount] = useState('');
+  const [withdrawBankName, setWithdrawBankName] = useState('');
+  const [withdrawAccountNumber, setWithdrawAccountNumber] = useState('');
+  const [withdrawAccountName, setWithdrawAccountName] = useState('');
+  const [withdrawLoading, setWithdrawLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      Promise.all([
+        getUserTransactions(user.uid),
+        getUserDeposits(user.uid),
+        getUserWithdrawals(user.uid)
+      ]).then(([tx, dep, wit]) => {
+        setTransactions(tx);
+        setDeposits(dep);
+        setWithdrawals(wit);
+        setLoading(false);
+      }).catch(err => {
+        console.error("Error fetching wallet data:", err);
+        setLoading(false);
+      });
+    }
+  }, [user]);
 
   const handleCopyAccount = () => {
     navigator.clipboard.writeText('2012345678');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  const handleDeposit = async () => {
+    if (!user || !depositAmount) return;
+    const amount = parseFloat(depositAmount);
+    if (isNaN(amount) || amount <= 0) return;
+
+    setDepositLoading(true);
+    try {
+      await requestDeposit(user.uid, amount, depositPaymentMethod, depositProofUrl);
+      await refreshUserData();
+      // Refresh deposits list
+      const newDeposits = await getUserDeposits(user.uid);
+      setDeposits(newDeposits);
+      setShowDepositModal(false);
+      setDepositAmount('');
+      setDepositProofUrl('');
+      alert('Deposit request submitted successfully!');
+    } catch (err) {
+      console.error("Error requesting deposit:", err);
+      alert('Failed to submit deposit request. Please try again.');
+    } finally {
+      setDepositLoading(false);
+    }
+  };
+
+  const handleWithdraw = async () => {
+    if (!user || !withdrawAmount || !withdrawBankName || !withdrawAccountNumber || !withdrawAccountName) return;
+    const amount = parseFloat(withdrawAmount);
+    if (isNaN(amount) || amount <= 0) return;
+    if (userData && amount > userData.walletBalance) {
+      alert('Insufficient balance');
+      return;
+    }
+
+    setWithdrawLoading(true);
+    try {
+      // We'll use requestWithdrawal from firebaseServices
+      // First, let's import that (we already did)
+      const { requestWithdrawal } = await import('@/lib/firebaseServices');
+      await requestWithdrawal(user.uid, amount, withdrawBankName, withdrawAccountNumber, withdrawAccountName);
+      await refreshUserData();
+      // Refresh withdrawals list
+      const newWithdrawals = await getUserWithdrawals(user.uid);
+      setWithdrawals(newWithdrawals);
+      // Also refresh transactions
+      const newTransactions = await getUserTransactions(user.uid);
+      setTransactions(newTransactions);
+      setShowWithdrawModal(false);
+      setWithdrawAmount('');
+      setWithdrawBankName('');
+      setWithdrawAccountNumber('');
+      setWithdrawAccountName('');
+      alert('Withdrawal request submitted successfully!');
+    } catch (err) {
+      console.error("Error requesting withdrawal:", err);
+      alert('Failed to submit withdrawal request. Please try again.');
+    } finally {
+      setWithdrawLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -49,15 +140,15 @@ export default function WalletPage() {
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div>
               <p className="text-green-200 mb-2">Available Balance</p>
-              <p className="text-5xl font-bold mb-2">{formatCurrency(45000)}</p>
+              <p className="text-5xl font-bold mb-2">{formatCurrency(userData?.walletBalance || 0)}</p>
               <p className="text-green-200 text-sm">Updated just now</p>
             </div>
             <div className="flex gap-4">
-              <Button className="bg-white text-green-800 hover:bg-green-50">
+              <Button onClick={() => setShowDepositModal(true)} className="bg-white text-green-800 hover:bg-green-50">
                 <ArrowDownToLine className="w-4 h-4 mr-2" />
                 Deposit
               </Button>
-              <Button className="bg-green-600 hover:bg-green-500 text-white border border-green-500">
+              <Button onClick={() => setShowWithdrawModal(true)} className="bg-green-600 hover:bg-green-500 text-white border border-green-500">
                 <ArrowUpFromLine className="w-4 h-4 mr-2" />
                 Withdraw
               </Button>
@@ -76,7 +167,9 @@ export default function WalletPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{formatCurrency(500000)}</div>
+            <div className="text-2xl font-bold text-gray-900">
+              {formatCurrency(deposits.filter(d => d.status === 'completed' || d.status === 'approved').reduce((sum, d) => sum + d.amount, 0))}
+            </div>
           </CardContent>
         </Card>
 
@@ -88,7 +181,9 @@ export default function WalletPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{formatCurrency(75000)}</div>
+            <div className="text-2xl font-bold text-gray-900">
+              {formatCurrency(userData?.totalWithdrawn || 0)}
+            </div>
           </CardContent>
         </Card>
 
@@ -96,11 +191,13 @@ export default function WalletPage() {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500 flex items-center gap-2">
               <CreditCard className="w-4 h-4 text-amber-600" />
-              Total Payouts
+              Total Earnings
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{formatCurrency(120000)}</div>
+            <div className="text-2xl font-bold text-gray-900">
+              {formatCurrency(userData?.totalEarnings || 0)}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -139,21 +236,6 @@ export default function WalletPage() {
               <CardTitle>Transaction History</CardTitle>
               <CardDescription>View all your wallet transactions</CardDescription>
             </div>
-            <div className="flex gap-2">
-              <select className="border border-gray-200 rounded-lg px-3 py-2 text-sm">
-                <option>All Types</option>
-                <option>Deposits</option>
-                <option>Withdrawals</option>
-                <option>Payouts</option>
-                <option>Investments</option>
-              </select>
-              <select className="border border-gray-200 rounded-lg px-3 py-2 text-sm">
-                <option>Last 30 Days</option>
-                <option>Last 7 Days</option>
-                <option>This Month</option>
-                <option>Last Month</option>
-              </select>
-            </div>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -162,38 +244,42 @@ export default function WalletPage() {
                   <tr className="border-b border-gray-200">
                     <th className="text-left py-3 px-4 font-medium text-gray-500 text-sm">Type</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-500 text-sm">Date</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-500 text-sm">Method</th>
                     <th className="text-left py-3 px-4 font-medium text-gray-500 text-sm">Status</th>
                     <th className="text-right py-3 px-4 font-medium text-gray-500 text-sm">Amount</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {transactions.map((transaction) => (
-                    <tr key={transaction.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-4 px-4">
-                        <span className={`inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          transaction.type === 'Deposit' || transaction.type === 'Payout' || transaction.type === 'Referral Bonus'
-                            ? 'bg-green-100 text-green-700'
-                            : transaction.type === 'Withdrawal' || transaction.type === 'Investment'
-                              ? 'bg-red-100 text-red-700'
-                              : 'bg-gray-100 text-gray-700'
-                        }`}>
-                          {transaction.type}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4 text-gray-900">{new Date(transaction.date).toLocaleDateString()}</td>
-                      <td className="py-4 px-4 text-gray-600">{transaction.method}</td>
-                      <td className="py-4 px-4">
-                        <span className="inline-flex items-center gap-1 text-green-700 text-sm">
-                          <CheckCircle className="w-4 h-4" />
-                          {transaction.status}
-                        </span>
-                      </td>
-                      <td className={`py-4 px-4 text-right font-semibold ${transaction.amount > 0 ? 'text-green-700' : 'text-red-700'}`}>
-                        {transaction.amount > 0 ? '+' : ''}{formatCurrency(Math.abs(transaction.amount))}
-                      </td>
+                  {transactions.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="text-center text-gray-500 py-8">No transactions yet</td>
                     </tr>
-                  ))}
+                  ) : (
+                    transactions.map((transaction) => (
+                      <tr key={transaction.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-4 px-4">
+                          <span className={`inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            transaction.amount > 0
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-red-100 text-red-700'
+                          }`}>
+                            {transaction.type}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4 text-gray-900">
+                          {transaction.createdAt.toDate().toLocaleDateString()}
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className="inline-flex items-center gap-1 text-green-700 text-sm">
+                            <CheckCircle className="w-4 h-4" />
+                            {transaction.status}
+                          </span>
+                        </td>
+                        <td className={`py-4 px-4 text-right font-semibold ${transaction.amount > 0 ? 'text-green-700' : 'text-red-700'}`}>
+                          {transaction.amount > 0 ? '+' : ''}{formatCurrency(Math.abs(transaction.amount))}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -236,56 +322,137 @@ export default function WalletPage() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Reference</p>
-                    <p className="text-lg font-semibold text-gray-900">Your Full Name</p>
+                    <p className="text-lg font-semibold text-gray-900">{user?.displayName || user?.email?.split('@')[0] || 'Your Name'}</p>
                   </div>
                 </div>
                 <div className="mt-6 p-4 bg-white rounded-lg border border-green-200">
                   <p className="text-sm text-green-800">
-                    <strong>Important:</strong> Always include your full name as payment reference. 
+                    <strong>Important:</strong> Always include your full name as payment reference.
                     Your wallet will be credited automatically within 15 minutes after confirmation.
                   </p>
                 </div>
               </div>
             </CardContent>
           </Card>
+        </div>
+      )}
 
-          {/* Saved Bank Accounts */}
-          <Card>
+      {/* Deposit Modal */}
+      {showDepositModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
-                <CardTitle>Saved Bank Accounts</CardTitle>
-                <CardDescription>Your verified bank accounts for withdrawals</CardDescription>
+                <CardTitle>Deposit Funds</CardTitle>
+                <CardDescription>Enter deposit details</CardDescription>
               </div>
-              <Button className="bg-green-700 hover:bg-green-800 text-white">
-                <Plus className="w-4 h-4 mr-2" />
-                Add Account
+              <Button variant="ghost" size="sm" onClick={() => setShowDepositModal(false)}>
+                <X className="h-4 w-4" />
               </Button>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {bankAccounts.map((account) => (
-                  <div key={account.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                        <CreditCard className="w-6 h-6 text-green-700" />
-                      </div>
-                      <div>
-                        <p className="font-semibold text-gray-900">{account.bankName}</p>
-                        <p className="text-gray-600">{account.accountName} • {account.accountNumber}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="px-2.5 py-0.5 bg-green-100 text-green-700 text-xs font-medium rounded-full flex items-center gap-1">
-                        <CheckCircle className="w-3 h-3" />
-                        {account.status}
-                      </span>
-                      <Button variant="ghost" className="h-8">
-                        Edit
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="deposit-amount">Amount (₦)</Label>
+                <Input
+                  id="deposit-amount"
+                  type="number"
+                  placeholder="Enter amount"
+                  value={depositAmount}
+                  onChange={(e) => setDepositAmount(e.target.value)}
+                  className="mt-2"
+                />
               </div>
+              <div>
+                <Label htmlFor="deposit-proof">Proof of Payment (URL, optional)</Label>
+                <Input
+                  id="deposit-proof"
+                  type="text"
+                  placeholder="https://example.com/proof.jpg"
+                  value={depositProofUrl}
+                  onChange={(e) => setDepositProofUrl(e.target.value)}
+                  className="mt-2"
+                />
+              </div>
+              <Button
+                onClick={handleDeposit}
+                className="w-full bg-green-700 hover:bg-green-800 text-white"
+                disabled={depositLoading}
+              >
+                {depositLoading ? 'Submitting...' : 'Submit Deposit Request'}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Withdraw Modal */}
+      {showWithdrawModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Withdraw Funds</CardTitle>
+                <CardDescription>Enter withdrawal details</CardDescription>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setShowWithdrawModal(false)}>
+                <X className="h-4 w-4" />
+              </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="withdraw-amount">Amount (₦)</Label>
+                <Input
+                  id="withdraw-amount"
+                  type="number"
+                  placeholder="Enter amount"
+                  value={withdrawAmount}
+                  onChange={(e) => setWithdrawAmount(e.target.value)}
+                  className="mt-2"
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  Available: {formatCurrency(userData?.walletBalance || 0)}
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="withdraw-bank">Bank Name</Label>
+                <Input
+                  id="withdraw-bank"
+                  type="text"
+                  placeholder="e.g., First Bank"
+                  value={withdrawBankName}
+                  onChange={(e) => setWithdrawBankName(e.target.value)}
+                  className="mt-2"
+                />
+              </div>
+              <div>
+                <Label htmlFor="withdraw-account-number">Account Number</Label>
+                <Input
+                  id="withdraw-account-number"
+                  type="text"
+                  placeholder="Enter account number"
+                  value={withdrawAccountNumber}
+                  onChange={(e) => setWithdrawAccountNumber(e.target.value)}
+                  className="mt-2"
+                />
+              </div>
+              <div>
+                <Label htmlFor="withdraw-account-name">Account Name</Label>
+                <Input
+                  id="withdraw-account-name"
+                  type="text"
+                  placeholder="Enter account name"
+                  value={withdrawAccountName}
+                  onChange={(e) => setWithdrawAccountName(e.target.value)}
+                  className="mt-2"
+                />
+              </div>
+              <Button
+                onClick={handleWithdraw}
+                className="w-full bg-green-700 hover:bg-green-800 text-white"
+                disabled={withdrawLoading}
+              >
+                {withdrawLoading ? 'Submitting...' : 'Submit Withdrawal Request'}
+              </Button>
             </CardContent>
           </Card>
         </div>
