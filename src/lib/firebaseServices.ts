@@ -243,11 +243,27 @@ export async function updateUserData(
  */
 export async function getAllUsers(): Promise<UserData[]> {
   try {
-    const querySnapshot = await getDocs(
-      query(collection(db, "users"), orderBy("createdAt", "desc"))
-    );
+    // Try with orderBy first (requires index)
+    let q = query(collection(db, "users"), orderBy("createdAt", "desc"));
+    let querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserData));
-  } catch (error) {
+  } catch (error: any) {
+    // If that fails (missing index), try without orderBy
+    if (error.message.includes("requires an index")) {
+      try {
+        const querySnapshot = await getDocs(collection(db, "users"));
+        const users = querySnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() } as UserData));
+        // Sort them client-side by createdAt descending
+        return users.sort((a, b) => {
+          const aTime = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+          const bTime = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+          return bTime - aTime;
+        });
+      } catch (fallbackError) {
+        console.error("Error fetching all users (fallback):", fallbackError);
+        return [];
+      }
+    }
     console.error("Error fetching users:", error);
     return [];
   }
@@ -396,14 +412,35 @@ export async function createInvestment(
  */
 export async function getUserInvestments(userId: string): Promise<UserInvestment[]> {
   try {
-    const q = query(
+    // Try with orderBy first (requires index)
+    let q = query(
       collection(db, "investments"),
       where("userId", "==", userId),
       orderBy("createdAt", "desc")
     );
-    const querySnapshot = await getDocs(q);
+    let querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as UserInvestment));
-  } catch (error) {
+  } catch (error: any) {
+    // If that fails (missing index), try without orderBy
+    if (error.message.includes("requires an index")) {
+      try {
+        const q = query(
+          collection(db, "investments"),
+          where("userId", "==", userId)
+        );
+        const querySnapshot = await getDocs(q);
+        const investments = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as UserInvestment));
+        // Sort them client-side by createdAt descending
+        return investments.sort((a, b) => {
+          const aTime = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+          const bTime = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+          return bTime - aTime;
+        });
+      } catch (fallbackError) {
+        console.error("Error fetching user investments (fallback):", fallbackError);
+        return [];
+      }
+    }
     console.error("Error fetching user investments:", error);
     return [];
   }
@@ -414,13 +451,30 @@ export async function getUserInvestments(userId: string): Promise<UserInvestment
  */
 export async function getAllInvestments(): Promise<UserInvestment[]> {
   try {
-    const q = query(
+    // Try with orderBy first (requires index)
+    let q = query(
       collection(db, "investments"),
       orderBy("createdAt", "desc")
     );
-    const querySnapshot = await getDocs(q);
+    let querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as UserInvestment));
-  } catch (error) {
+  } catch (error: any) {
+    // If that fails (missing index), try without orderBy
+    if (error.message.includes("requires an index")) {
+      try {
+        const querySnapshot = await getDocs(collection(db, "investments"));
+        const investments = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as UserInvestment));
+        // Sort them client-side by createdAt descending
+        return investments.sort((a, b) => {
+          const aTime = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+          const bTime = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+          return bTime - aTime;
+        });
+      } catch (fallbackError) {
+        console.error("Error fetching all investments (fallback):", fallbackError);
+        return [];
+      }
+    }
     console.error("Error fetching investments:", error);
     return [];
   }
@@ -497,6 +551,7 @@ export async function createFarmProject(
  */
 export async function getUserTransactions(userId: string, limitCount?: number): Promise<Transaction[]> {
   try {
+    // Try with orderBy first (requires index)
     let q = query(
       collection(db, "transactions"),
       where("userId", "==", userId),
@@ -509,7 +564,32 @@ export async function getUserTransactions(userId: string, limitCount?: number): 
     
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Transaction));
-  } catch (error) {
+  } catch (error: any) {
+    // If that fails (missing index), try without orderBy
+    if (error.message.includes("requires an index")) {
+      try {
+        let q = query(
+          collection(db, "transactions"),
+          where("userId", "==", userId)
+        );
+        
+        if (limitCount) {
+          q = query(q, limit(limitCount));
+        }
+        
+        const querySnapshot = await getDocs(q);
+        const transactions = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Transaction));
+        // Sort them client-side by createdAt descending
+        return transactions.sort((a, b) => {
+          const aTime = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+          const bTime = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+          return bTime - aTime;
+        });
+      } catch (fallbackError) {
+        console.error("Error fetching user transactions (fallback):", fallbackError);
+        return [];
+      }
+    }
     console.error("Error fetching transactions:", error);
     return [];
   }
@@ -598,14 +678,35 @@ export async function requestWithdrawal(
  */
 export async function getUserWithdrawals(userId: string): Promise<WithdrawalRequest[]> {
   try {
-    const q = query(
+    // Try with orderBy first (requires index)
+    let q = query(
       collection(db, "withdrawals"),
       where("userId", "==", userId),
       orderBy("createdAt", "desc")
     );
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as WithdrawalRequest));
-  } catch (error) {
+  } catch (error: any) {
+    // If that fails (missing index), try without orderBy
+    if (error.message.includes("requires an index")) {
+      try {
+        const q = query(
+          collection(db, "withdrawals"),
+          where("userId", "==", userId)
+        );
+        const querySnapshot = await getDocs(q);
+        const withdrawals = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as WithdrawalRequest));
+        // Sort them client-side by createdAt descending
+        return withdrawals.sort((a, b) => {
+          const aTime = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+          const bTime = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+          return bTime - aTime;
+        });
+      } catch (fallbackError) {
+        console.error("Error fetching user withdrawals (fallback):", fallbackError);
+        return [];
+      }
+    }
     console.error("Error fetching withdrawals:", error);
     return [];
   }
@@ -616,13 +717,30 @@ export async function getUserWithdrawals(userId: string): Promise<WithdrawalRequ
  */
 export async function getAllWithdrawals(): Promise<WithdrawalRequest[]> {
   try {
-    const q = query(
+    // Try with orderBy first (requires index)
+    let q = query(
       collection(db, "withdrawals"),
       orderBy("createdAt", "desc")
     );
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as WithdrawalRequest));
-  } catch (error) {
+  } catch (error: any) {
+    // If that fails (missing index), try without orderBy
+    if (error.message.includes("requires an index")) {
+      try {
+        const querySnapshot = await getDocs(collection(db, "withdrawals"));
+        const withdrawals = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as WithdrawalRequest));
+        // Sort them client-side by createdAt descending
+        return withdrawals.sort((a, b) => {
+          const aTime = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+          const bTime = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+          return bTime - aTime;
+        });
+      } catch (fallbackError) {
+        console.error("Error fetching all withdrawals (fallback):", fallbackError);
+        return [];
+      }
+    }
     console.error("Error fetching withdrawals:", error);
     return [];
   }
@@ -669,17 +787,36 @@ export async function updateWithdrawalStatus(
         });
         
         // Update transaction to completed
-        const q = query(
-          collection(db, "transactions"),
-          where("userId", "==", withdrawal.userId),
-          where("type", "==", "withdrawal"),
-          where("status", "==", "pending"),
-          orderBy("createdAt", "desc"),
-          limit(1)
-        );
-        const snapshot = await getDocs(q);
-        if (!snapshot.empty) {
-          await updateDoc(snapshot.docs[0].ref, { status: "completed" });
+        try {
+          let q = query(
+            collection(db, "transactions"),
+            where("userId", "==", withdrawal.userId),
+            where("type", "==", "withdrawal"),
+            where("status", "==", "pending"),
+            orderBy("createdAt", "desc"),
+            limit(1)
+          );
+          let snapshot = await getDocs(q);
+          if (!snapshot.empty) {
+            await updateDoc(snapshot.docs[0].ref, { status: "completed" });
+          }
+        } catch (error: any) {
+          if (error.message.includes("requires an index")) {
+            // Fallback without orderBy
+            const q = query(
+              collection(db, "transactions"),
+              where("userId", "==", withdrawal.userId),
+              where("type", "==", "withdrawal"),
+              where("status", "==", "pending"),
+              limit(1)
+            );
+            const snapshot = await getDocs(q);
+            if (!snapshot.empty) {
+              await updateDoc(snapshot.docs[0].ref, { status: "completed" });
+            }
+          } else {
+            throw error;
+          }
         }
       }
     }
@@ -727,14 +864,35 @@ export async function requestDeposit(
  */
 export async function getUserDeposits(userId: string): Promise<DepositRequest[]> {
   try {
-    const q = query(
+    // Try with orderBy first (requires index)
+    let q = query(
       collection(db, "deposits"),
       where("userId", "==", userId),
       orderBy("createdAt", "desc")
     );
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as DepositRequest));
-  } catch (error) {
+  } catch (error: any) {
+    // If that fails (missing index), try without orderBy
+    if (error.message.includes("requires an index")) {
+      try {
+        const q = query(
+          collection(db, "deposits"),
+          where("userId", "==", userId)
+        );
+        const querySnapshot = await getDocs(q);
+        const deposits = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as DepositRequest));
+        // Sort them client-side by createdAt descending
+        return deposits.sort((a, b) => {
+          const aTime = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+          const bTime = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+          return bTime - aTime;
+        });
+      } catch (fallbackError) {
+        console.error("Error fetching user deposits (fallback):", fallbackError);
+        return [];
+      }
+    }
     console.error("Error fetching deposits:", error);
     return [];
   }
@@ -745,13 +903,30 @@ export async function getUserDeposits(userId: string): Promise<DepositRequest[]>
  */
 export async function getAllDeposits(): Promise<DepositRequest[]> {
   try {
-    const q = query(
+    // Try with orderBy first (requires index)
+    let q = query(
       collection(db, "deposits"),
       orderBy("createdAt", "desc")
     );
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as DepositRequest));
-  } catch (error) {
+  } catch (error: any) {
+    // If that fails (missing index), try without orderBy
+    if (error.message.includes("requires an index")) {
+      try {
+        const querySnapshot = await getDocs(collection(db, "deposits"));
+        const deposits = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as DepositRequest));
+        // Sort them client-side by createdAt descending
+        return deposits.sort((a, b) => {
+          const aTime = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+          const bTime = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+          return bTime - aTime;
+        });
+      } catch (fallbackError) {
+        console.error("Error fetching all deposits (fallback):", fallbackError);
+        return [];
+      }
+    }
     console.error("Error fetching deposits:", error);
     return [];
   }
@@ -860,13 +1035,14 @@ export async function submitKYC(
  */
 export async function getUserKYC(userId: string): Promise<KYCSubmission | null> {
   try {
-    const q = query(
+    // Try with orderBy first (requires index)
+    let q = query(
       collection(db, "kycSubmissions"),
       where("userId", "==", userId),
       orderBy("createdAt", "desc"),
       limit(1)
     );
-    const querySnapshot = await getDocs(q);
+    let querySnapshot = await getDocs(q);
     
     if (!querySnapshot.empty) {
       const doc = querySnapshot.docs[0];
@@ -874,7 +1050,28 @@ export async function getUserKYC(userId: string): Promise<KYCSubmission | null> 
     }
     
     return null;
-  } catch (error) {
+  } catch (error: any) {
+    // If that fails (missing index), try without orderBy
+    if (error.message.includes("requires an index")) {
+      try {
+        const q = query(
+          collection(db, "kycSubmissions"),
+          where("userId", "==", userId),
+          limit(1)
+        );
+        const querySnapshot = await getDocs(q);
+        
+        if (!querySnapshot.empty) {
+          const doc = querySnapshot.docs[0];
+          return { id: doc.id, ...doc.data() } as KYCSubmission;
+        }
+        
+        return null;
+      } catch (fallbackError) {
+        console.error("Error fetching user KYC (fallback):", fallbackError);
+        return null;
+      }
+    }
     console.error("Error fetching KYC:", error);
     return null;
   }
@@ -885,13 +1082,30 @@ export async function getUserKYC(userId: string): Promise<KYCSubmission | null> 
  */
 export async function getAllKYCs(): Promise<KYCSubmission[]> {
   try {
-    const q = query(
+    // Try with orderBy first (requires index)
+    let q = query(
       collection(db, "kycSubmissions"),
       orderBy("createdAt", "desc")
     );
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as KYCSubmission));
-  } catch (error) {
+  } catch (error: any) {
+    // If that fails (missing index), try without orderBy
+    if (error.message.includes("requires an index")) {
+      try {
+        const querySnapshot = await getDocs(collection(db, "kycSubmissions"));
+        const kycs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as KYCSubmission));
+        // Sort them client-side by createdAt descending
+        return kycs.sort((a, b) => {
+          const aTime = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+          const bTime = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+          return bTime - aTime;
+        });
+      } catch (fallbackError) {
+        console.error("Error fetching all KYCs (fallback):", fallbackError);
+        return [];
+      }
+    }
     console.error("Error fetching KYCs:", error);
     return [];
   }
@@ -942,14 +1156,35 @@ export async function updateKYCStatus(
  */
 export async function getUserReferrals(userId: string): Promise<Referral[]> {
   try {
-    const q = query(
+    // Try with orderBy first (requires index)
+    let q = query(
       collection(db, "referrals"),
       where("referrerId", "==", userId),
       orderBy("createdAt", "desc")
     );
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Referral));
-  } catch (error) {
+  } catch (error: any) {
+    // If that fails (missing index), try without orderBy
+    if (error.message.includes("requires an index")) {
+      try {
+        const q = query(
+          collection(db, "referrals"),
+          where("referrerId", "==", userId)
+        );
+        const querySnapshot = await getDocs(q);
+        const referrals = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Referral));
+        // Sort them client-side by createdAt descending
+        return referrals.sort((a, b) => {
+          const aTime = a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0;
+          const bTime = b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0;
+          return bTime - aTime;
+        });
+      } catch (fallbackError) {
+        console.error("Error fetching user referrals (fallback):", fallbackError);
+        return [];
+      }
+    }
     console.error("Error fetching referrals:", error);
     return [];
   }

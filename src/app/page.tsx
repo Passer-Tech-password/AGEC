@@ -31,34 +31,24 @@ import {
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { getInvestmentPlans, getFarmProjects, getDashboardStats, InvestmentPlanData, FarmProject, DashboardStats } from '@/lib/firebaseServices';
+import { getInvestmentPlans, getFarmProjects, InvestmentPlanData, FarmProject } from '@/lib/firebaseServices';
+import { Timestamp } from 'firebase/firestore';
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [plans, setPlans] = useState<InvestmentPlanData[]>([]);
   const [projects, setProjects] = useState<FarmProject[]>([]);
-  const [stats, setStats] = useState<DashboardStats>({
-    totalUsers: 0,
-    totalInvested: 0,
-    totalWithdrawn: 0,
-    totalEarnings: 0,
-    pendingWithdrawals: 0,
-    pendingDeposits: 0,
-    pendingKYCs: 0
-  });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [plansData, projectsData, statsData] = await Promise.all([
+        const [plansData, projectsData] = await Promise.all([
           getInvestmentPlans(),
-          getFarmProjects(),
-          getDashboardStats()
+          getFarmProjects()
         ]);
         setPlans(plansData);
         setProjects(projectsData);
-        setStats(statsData);
       } catch (err) {
         console.error("Error fetching landing data:", err);
       } finally {
@@ -69,8 +59,157 @@ export default function LandingPage() {
     fetchData();
   }, []);
 
-  const displayPlans = plans;
-  const displayProjects = projects;
+  // Fallback data if Firebase has no data
+  const fallbackPlans: InvestmentPlanData[] = [
+    {
+      id: "plan-1",
+      name: "Starter",
+      description: "Perfect for new investors",
+      minInvestment: 20000,
+      roiPercentage: 15,
+      durationDays: 90,
+      biWeeklyPayout: 5,
+      popular: false,
+      featured: false,
+      features: [
+        "Minimum investment: ₦20,000",
+        "15% ROI in 90 days",
+        "Bi-weekly payouts",
+        "Secure and insured"
+      ],
+      active: true,
+      createdAt: Timestamp.now()
+    },
+    {
+      id: "plan-2",
+      name: "Bronze",
+      description: "Great for steady growth",
+      minInvestment: 50000,
+      roiPercentage: 20,
+      durationDays: 120,
+      biWeeklyPayout: 7,
+      popular: true,
+      featured: false,
+      features: [
+        "Minimum investment: ₦50,000",
+        "20% ROI in 120 days",
+        "Bi-weekly payouts",
+        "Priority support"
+      ],
+      active: true,
+      createdAt: Timestamp.now()
+    },
+    {
+      id: "plan-3",
+      name: "Silver",
+      description: "Enhanced returns for serious investors",
+      minInvestment: 100000,
+      roiPercentage: 25,
+      durationDays: 150,
+      biWeeklyPayout: 8,
+      popular: false,
+      featured: false,
+      features: [
+        "Minimum investment: ₦100,000",
+        "25% ROI in 150 days",
+        "Bi-weekly payouts",
+        "Dedicated account manager"
+      ],
+      active: true,
+      createdAt: Timestamp.now()
+    },
+    {
+      id: "plan-4",
+      name: "Gold",
+      description: "Premium investment plan",
+      minInvestment: 250000,
+      roiPercentage: 30,
+      durationDays: 180,
+      biWeeklyPayout: 10,
+      popular: false,
+      featured: true,
+      features: [
+        "Minimum investment: ₦250,000",
+        "30% ROI in 180 days",
+        "Bi-weekly payouts",
+        "Exclusive farm access"
+      ],
+      active: true,
+      createdAt: Timestamp.now()
+    },
+    {
+      id: "plan-5",
+      name: "Elite",
+      description: "For our most exclusive investors",
+      minInvestment: 500000,
+      roiPercentage: 35,
+      durationDays: 240,
+      biWeeklyPayout: 12,
+      popular: false,
+      featured: false,
+      features: [
+        "Minimum investment: ₦500,000+",
+        "35% ROI in 240 days",
+        "Bi-weekly payouts",
+        "VIP events and updates"
+      ],
+      active: true,
+      createdAt: Timestamp.now()
+    }
+  ];
+
+  const fallbackProjects: FarmProject[] = [
+    {
+      id: "project-1",
+      name: "Poultry Farm Investment",
+      location: "Ogun State, Nigeria",
+      description: "Modern poultry farm with high-yield broilers and layers",
+      imageUrl: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&q=80&w=800",
+      investmentAmount: 100000,
+      roiPercentage: 25,
+      durationDays: 120,
+      spotsLeft: 45,
+      active: true,
+      createdAt: Timestamp.now()
+    },
+    {
+      id: "project-2",
+      name: "Rice Farm Project",
+      location: "Kebbi State, Nigeria",
+      description: "Large-scale rice production with modern irrigation",
+      imageUrl: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&q=80&w=800",
+      investmentAmount: 150000,
+      roiPercentage: 30,
+      durationDays: 150,
+      spotsLeft: 32,
+      active: true,
+      createdAt: Timestamp.now()
+    },
+    {
+      id: "project-3",
+      name: "Fish Farming Venture",
+      location: "Delta State, Nigeria",
+      description: "Commercial catfish and tilapia production",
+      imageUrl: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&q=80&w=800",
+      investmentAmount: 80000,
+      roiPercentage: 22,
+      durationDays: 90,
+      spotsLeft: 58,
+      active: true,
+      createdAt: Timestamp.now()
+    }
+  ];
+
+  const displayPlans = plans.length > 0 ? plans : fallbackPlans;
+  const displayProjects = projects.length > 0 ? projects : fallbackProjects;
+
+  // Static public stats for landing page
+  const stats = {
+    totalInvested: 50000000,
+    totalWithdrawn: 15000000,
+    totalUsers: 5000,
+    totalEarnings: 2500000
+  };
 
   const howItWorks = [
     { icon: <User className="w-8 h-8" />, title: 'Register Account', description: 'Create your account in a few simple steps.' },
@@ -214,7 +353,7 @@ export default function LandingPage() {
                   ))}
                 </div>
                 <div>
-                  <p className="font-semibold">{stats.totalUsers.toLocaleString()}+ Investors</p>
+                  <p className="font-semibold">5,000+ Investors</p>
                   <p className="text-green-200 text-sm">Join our community of smart investors growing with AGEC.</p>
                 </div>
               </div>
