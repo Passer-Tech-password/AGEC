@@ -50,26 +50,26 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-gray-600 mt-1">Overview of AGEC platform performance and activities.</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+        <p className="text-gray-600 mt-1 text-sm sm:text-base">Overview of AGEC platform performance and activities.</p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Total Users</CardTitle>
-            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-              <Users className="w-6 h-6 text-blue-700" />
+            <CardTitle className="text-xs sm:text-sm font-medium text-gray-500">Total Users</CardTitle>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg sm:rounded-xl flex items-center justify-center">
+              <Users className="w-5 h-5 sm:w-6 sm:h-6 text-blue-700" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900">{stats?.totalUsers || 0}</div>
-            <p className="text-sm text-green-600 mt-1 flex items-center">
-              <TrendingUp className="w-4 h-4 mr-1" />
+            <div className="text-2xl sm:text-3xl font-bold text-gray-900">{stats?.totalUsers || 0}</div>
+            <p className="text-xs sm:text-sm text-green-600 mt-1 flex items-center">
+              <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
               Growing
             </p>
           </CardContent>
@@ -77,15 +77,15 @@ export default function AdminDashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Total Invested</CardTitle>
-            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-              <Briefcase className="w-6 h-6 text-green-700" />
+            <CardTitle className="text-xs sm:text-sm font-medium text-gray-500">Total Invested</CardTitle>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg sm:rounded-xl flex items-center justify-center">
+              <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-green-700" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900">{formatCurrency(stats?.totalInvested || 0)}</div>
-            <p className="text-sm text-green-600 mt-1 flex items-center">
-              <TrendingUp className="w-4 h-4 mr-1" />
+            <div className="text-2xl sm:text-3xl font-bold text-gray-900">{formatCurrency(stats?.totalInvested || 0)}</div>
+            <p className="text-xs sm:text-sm text-green-600 mt-1 flex items-center">
+              <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
               Growing
             </p>
           </CardContent>
@@ -93,28 +93,28 @@ export default function AdminDashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Total Withdrawn</CardTitle>
-            <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
-              <BarChart3 className="w-6 h-6 text-amber-700" />
+            <CardTitle className="text-xs sm:text-sm font-medium text-gray-500">Total Withdrawn</CardTitle>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-100 rounded-lg sm:rounded-xl flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-amber-700" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900">{formatCurrency(stats?.totalWithdrawn || 0)}</div>
-            <p className="text-sm text-amber-600 mt-1">{stats?.pendingWithdrawals || 0} pending</p>
+            <div className="text-2xl sm:text-3xl font-bold text-gray-900">{formatCurrency(stats?.totalWithdrawn || 0)}</div>
+            <p className="text-xs sm:text-sm text-amber-600 mt-1">{stats?.pendingWithdrawals || 0} pending</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">Total Earnings</CardTitle>
-            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-purple-700" />
+            <CardTitle className="text-xs sm:text-sm font-medium text-gray-500">Total Earnings</CardTitle>
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg sm:rounded-xl flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-purple-700" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900">{formatCurrency(stats?.totalEarnings || 0)}</div>
-            <p className="text-sm text-green-600 mt-1 flex items-center">
-              <TrendingUp className="w-4 h-4 mr-1" />
+            <div className="text-2xl sm:text-3xl font-bold text-gray-900">{formatCurrency(stats?.totalEarnings || 0)}</div>
+            <p className="text-xs sm:text-sm text-green-600 mt-1 flex items-center">
+              <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
               Growing
             </p>
           </CardContent>
@@ -122,44 +122,46 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Recent Activity */}
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Recent Users */}
         <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
             <div>
-              <CardTitle>Recent Users</CardTitle>
-              <CardDescription>Latest registered users on the platform</CardDescription>
+              <CardTitle className="text-base sm:text-lg font-bold">Recent Users</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Latest registered users on the platform</CardDescription>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
+          <CardContent className="pt-2">
+            <div className="overflow-x-auto -mx-3 sm:mx-0">
+              <table className="w-full min-w-[400px]">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-medium text-gray-500 text-sm">User</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-500 text-sm">Email</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-500 text-sm">Status</th>
-                    <th className="text-right py-3 px-4 font-medium text-gray-500 text-sm">Invested</th>
+                    <th className="text-left py-2 sm:py-3 px-3 sm:px-4 font-medium text-gray-500 text-xs sm:text-sm">User</th>
+                    <th className="text-left py-2 sm:py-3 px-3 sm:px-4 font-medium text-gray-500 text-xs sm:text-sm">Email</th>
+                    <th className="text-left py-2 sm:py-3 px-3 sm:px-4 font-medium text-gray-500 text-xs sm:text-sm">Status</th>
+                    <th className="text-right py-2 sm:py-3 px-3 sm:px-4 font-medium text-gray-500 text-xs sm:text-sm">Invested</th>
                   </tr>
                 </thead>
                 <tbody>
                   {recentUsers.map((user) => (
                     <tr key={user.uid} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-4 px-4">
-                        <p className="font-medium text-gray-900">{user.fullName}</p>
+                      <td className="py-3 sm:py-4 px-3 sm:px-4">
+                        <p className="font-medium text-gray-900 text-xs sm:text-sm">{user.fullName}</p>
                       </td>
-                      <td className="py-4 px-4 text-gray-600">{user.email}</td>
-                      <td className="py-4 px-4">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      <td className="py-3 sm:py-4 px-3 sm:px-4 text-gray-600 text-xs sm:text-sm truncate max-w-[120px] sm:max-w-none">
+                        {user.email}
+                      </td>
+                      <td className="py-3 sm:py-4 px-3 sm:px-4">
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
                           user.kycVerified
                             ? 'bg-green-100 text-green-700'
                             : 'bg-amber-100 text-amber-700'
                         }`}>
-                          {user.kycVerified ? <CheckCircle className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                          {user.kycVerified ? <CheckCircle className="w-2.5 h-2.5" /> : <Clock className="w-2.5 h-2.5" />}
                           {user.kycVerified ? 'Verified' : 'Pending KYC'}
                         </span>
                       </td>
-                      <td className="py-4 px-4 text-right font-semibold text-gray-900">
+                      <td className="py-3 sm:py-4 px-3 sm:px-4 text-right font-semibold text-gray-900 text-xs sm:text-sm">
                         {formatCurrency(user.totalInvested)}
                       </td>
                     </tr>
@@ -171,27 +173,27 @@ export default function AdminDashboardPage() {
         </Card>
 
         {/* Pending Actions */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Pending Withdrawals */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-amber-600" />
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg font-bold">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
                 Pending Withdrawals
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {pendingWithdrawals.length === 0 ? (
-                <p className="text-center text-gray-500 py-4">No pending withdrawals</p>
+                <p className="text-center text-gray-500 py-4 text-sm">No pending withdrawals</p>
               ) : (
                 pendingWithdrawals.map((withdrawal) => (
-                  <div key={withdrawal.id} className="p-3 bg-amber-50 rounded-lg flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900">User ID: {withdrawal.userId.slice(0, 8)}...</p>
-                      <p className="text-sm text-gray-500">{new Date(withdrawal.createdAt.toDate()).toLocaleDateString()}</p>
+                  <div key={withdrawal.id} className="p-3 bg-amber-50 rounded-lg flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-medium text-gray-900 text-xs sm:text-sm truncate">User ID: {withdrawal.userId.slice(0, 8)}...</p>
+                      <p className="text-xs text-gray-500">{new Date(withdrawal.createdAt.toDate()).toLocaleDateString()}</p>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-gray-900">{formatCurrency(withdrawal.amount)}</p>
+                    <div className="text-right flex-shrink-0">
+                      <p className="font-semibold text-gray-900 text-xs sm:text-sm">{formatCurrency(withdrawal.amount)}</p>
                     </div>
                   </div>
                 ))
@@ -202,20 +204,20 @@ export default function AdminDashboardPage() {
           {/* Pending KYC */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-blue-600" />
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg font-bold">
+                <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
                 Pending KYC
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {pendingKYCs.length === 0 ? (
-                <p className="text-center text-gray-500 py-4">No pending KYC</p>
+                <p className="text-center text-gray-500 py-4 text-sm">No pending KYC</p>
               ) : (
                 pendingKYCs.map((kyc) => (
-                  <div key={kyc.id} className="p-3 bg-blue-50 rounded-lg flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900">User ID: {kyc.userId.slice(0, 8)}...</p>
-                      <p className="text-sm text-gray-500">{kyc.idType.toUpperCase()}</p>
+                  <div key={kyc.id} className="p-3 bg-blue-50 rounded-lg flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-medium text-gray-900 text-xs sm:text-sm truncate">User ID: {kyc.userId.slice(0, 8)}...</p>
+                      <p className="text-xs text-gray-500">{kyc.idType.toUpperCase()}</p>
                     </div>
                   </div>
                 ))

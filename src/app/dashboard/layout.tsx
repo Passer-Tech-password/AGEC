@@ -17,7 +17,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
     { icon: Briefcase, label: 'Investments', href: '/dashboard/investments' },
-    { icon: Leaf, label: 'Farm Projects', href: '/dashboard/investments' },
+    { icon: Leaf, label: 'Farm Projects', href: '/dashboard/farm-projects' },
     { icon: PiggyBank, label: 'Wallet', href: '/dashboard/wallet' },
     { icon: ArrowUpRight, label: 'Withdrawals', href: '/dashboard/withdrawals' },
     { icon: PiggyBank, label: 'Transactions', href: '/dashboard/transactions' },

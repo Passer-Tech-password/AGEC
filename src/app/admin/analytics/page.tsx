@@ -112,23 +112,23 @@ export default function AdminAnalyticsPage() {
   const activeInvestorsCount = new Set().size; // We'll calculate this from investments
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Analytics & Insights</h1>
-        <p className="text-gray-600 mt-1">Monitor platform performance and growth</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Analytics & Insights</h1>
+        <p className="text-gray-600 mt-1 text-sm sm:text-base">Monitor platform performance and growth</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Total Users</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.totalUsers}</p>
+          <CardContent className="pt-4 sm:pt-6">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-500">Total Users</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{stats.totalUsers}</p>
               </div>
-              <div className="flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
-                <TrendingUp className="w-4 h-4" />
+              <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-700 flex-shrink-0">
+                <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 +{Math.min(stats.totalUsers, 100)}%
               </div>
             </div>
@@ -136,14 +136,14 @@ export default function AdminAnalyticsPage() {
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Total Invested</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{formatCurrency(stats.totalInvested)}</p>
+          <CardContent className="pt-4 sm:pt-6">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-500">Total Invested</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{formatCurrency(stats.totalInvested)}</p>
               </div>
-              <div className="flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
-                <TrendingUp className="w-4 h-4" />
+              <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-700 flex-shrink-0">
+                <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 +15%
               </div>
             </div>
@@ -151,14 +151,14 @@ export default function AdminAnalyticsPage() {
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Total Withdrawn</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{formatCurrency(stats.totalWithdrawn)}</p>
+          <CardContent className="pt-4 sm:pt-6">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-500">Total Withdrawn</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{formatCurrency(stats.totalWithdrawn)}</p>
               </div>
-              <div className="flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
-                <TrendingUp className="w-4 h-4" />
+              <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-700 flex-shrink-0">
+                <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 +10%
               </div>
             </div>
@@ -166,14 +166,14 @@ export default function AdminAnalyticsPage() {
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Total Earnings</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{formatCurrency(stats.totalEarnings)}</p>
+          <CardContent className="pt-4 sm:pt-6">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-500">Total Earnings</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{formatCurrency(stats.totalEarnings)}</p>
               </div>
-              <div className="flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-700">
-                <TrendingUp className="w-4 h-4" />
+              <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-700 flex-shrink-0">
+                <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 +20%
               </div>
             </div>
@@ -181,14 +181,14 @@ export default function AdminAnalyticsPage() {
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Pending Withdrawals</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.pendingWithdrawals}</p>
+          <CardContent className="pt-4 sm:pt-6">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-500">Pending Withdrawals</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{stats.pendingWithdrawals}</p>
               </div>
-              <div className="flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700">
-                <TrendingDown className="w-4 h-4" />
+              <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs sm:text-sm font-medium bg-yellow-100 text-yellow-700 flex-shrink-0">
+                <TrendingDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 Action
               </div>
             </div>
@@ -196,14 +196,14 @@ export default function AdminAnalyticsPage() {
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500">Pending KYCs</p>
-                <p className="text-2xl font-bold text-gray-900 mt-1">{stats.pendingKYCs}</p>
+          <CardContent className="pt-4 sm:pt-6">
+            <div className="flex items-center justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-xs sm:text-sm text-gray-500">Pending KYCs</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{stats.pendingKYCs}</p>
               </div>
-              <div className="flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-700">
-                <TrendingDown className="w-4 h-4" />
+              <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs sm:text-sm font-medium bg-yellow-100 text-yellow-700 flex-shrink-0">
+                <TrendingDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 Action
               </div>
             </div>
@@ -212,25 +212,25 @@ export default function AdminAnalyticsPage() {
       </div>
 
       {/* Charts */}
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-green-700" />
-              <CardTitle>User Growth</CardTitle>
+              <Users className="w-4 h-4 sm:w-5 sm:h-5 text-green-700" />
+              <CardTitle className="text-base sm:text-lg font-bold">User Growth</CardTitle>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="h-80">
+          <CardContent className="pt-2">
+            <div className="h-48 sm:h-64 lg:h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={userGrowthData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="month" stroke="#6b7280" />
-                  <YAxis stroke="#6b7280" />
+                  <XAxis dataKey="month" stroke="#6b7280" fontSize={11} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#6b7280" fontSize={11} tickLine={false} axisLine={false} />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
                   />
-                  <Line type="monotone" dataKey="users" stroke="#16a34a" strokeWidth={3} dot={{ fill: '#16a34a', r: 4 }} />
+                  <Line type="monotone" dataKey="users" stroke="#16a34a" strokeWidth={2} dot={{ fill: '#16a34a', r: 3 }} activeDot={{ r: 5 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -240,17 +240,17 @@ export default function AdminAnalyticsPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-green-700" />
-              <CardTitle>Investment Growth</CardTitle>
+              <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-green-700" />
+              <CardTitle className="text-base sm:text-lg font-bold">Investment Growth</CardTitle>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="h-80">
+          <CardContent className="pt-2">
+            <div className="h-48 sm:h-64 lg:h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={investmentGrowthData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="month" stroke="#6b7280" />
-                  <YAxis stroke="#6b7280" tickFormatter={(value: any) => `₦${(value/1000000).toFixed(1)}M`} />
+                  <XAxis dataKey="month" stroke="#6b7280" fontSize={11} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#6b7280" fontSize={11} tickFormatter={(value: any) => `₦${(value/1000000).toFixed(1)}M`} tickLine={false} axisLine={false} />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
                     formatter={(value: any) => [formatCurrency(value), 'Total Invested']}
