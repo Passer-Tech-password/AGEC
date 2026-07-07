@@ -15,7 +15,6 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "./firebase";
-import { InvestmentPlan } from "./data";
 
 // ==============================================
 // TYPES & INTERFACES

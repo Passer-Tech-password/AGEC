@@ -31,24 +31,34 @@ import {
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { getInvestmentPlans, getFarmProjects, InvestmentPlanData, FarmProject } from '@/lib/firebaseServices';
+import { getInvestmentPlans, getFarmProjects, getDashboardStats, InvestmentPlanData, FarmProject, DashboardStats } from '@/lib/firebaseServices';
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [plans, setPlans] = useState<InvestmentPlanData[]>([]);
   const [projects, setProjects] = useState<FarmProject[]>([]);
-  const stats = { totalUsers: 1000, totalInvested: 250000000, totalWithdrawn: 95000000, totalEarnings: 0, pendingWithdrawals: 0, pendingDeposits: 0, pendingKYCs: 0 };
+  const [stats, setStats] = useState<DashboardStats>({
+    totalUsers: 0,
+    totalInvested: 0,
+    totalWithdrawn: 0,
+    totalEarnings: 0,
+    pendingWithdrawals: 0,
+    pendingDeposits: 0,
+    pendingKYCs: 0
+  });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [plansData, projectsData] = await Promise.all([
+        const [plansData, projectsData, statsData] = await Promise.all([
           getInvestmentPlans(),
-          getFarmProjects()
+          getFarmProjects(),
+          getDashboardStats()
         ]);
         setPlans(plansData);
         setProjects(projectsData);
+        setStats(statsData);
       } catch (err) {
         console.error("Error fetching landing data:", err);
       } finally {
@@ -59,23 +69,8 @@ export default function LandingPage() {
     fetchData();
   }, []);
 
-  // Fallback data if Firebase has none
-  const fallbackPlans = [
-    { id: '1', name: 'Starter Plan', description: 'Perfect for new investors', minInvestment: 20000, maxInvestment: 49999, roiPercentage: 18, durationDays: 90, biWeeklyPayout: 1500, popular: false, featured: false, features: ['18% ROI', '3 Months Duration', 'Bi-weekly Payouts', '24/7 Support'], active: true, createdAt: { toDate: () => new Date() } as any },
-    { id: '2', name: 'Bronze Plan', description: 'Grow your investment steadily', minInvestment: 50000, maxInvestment: 99999, roiPercentage: 24, durationDays: 120, biWeeklyPayout: 3500, popular: true, featured: false, features: ['24% ROI', '4 Months Duration', 'Bi-weekly Payouts', 'Priority Support'], active: true, createdAt: { toDate: () => new Date() } as any },
-    { id: '3', name: 'Silver Plan', description: 'Balanced investment option', minInvestment: 100000, maxInvestment: 249999, roiPercentage: 30, durationDays: 180, biWeeklyPayout: 7500, popular: true, featured: false, features: ['30% ROI', '6 Months Duration', 'Bi-weekly Payouts', 'Dedicated Manager'], active: true, createdAt: { toDate: () => new Date() } as any },
-    { id: '4', name: 'Gold Plan', description: 'Maximize your returns', minInvestment: 250000, maxInvestment: 499999, roiPercentage: 40, durationDays: 270, biWeeklyPayout: 15000, popular: false, featured: false, features: ['40% ROI', '9 Months Duration', 'Bi-weekly Payouts', 'VIP Support Access'], active: true, createdAt: { toDate: () => new Date() } as any },
-    { id: '5', name: 'Elite Plan', description: 'For serious investors', minInvestment: 500000, maxInvestment: undefined, roiPercentage: 50, durationDays: 365, biWeeklyPayout: 35000, popular: false, featured: true, features: ['50% ROI', '12 Months Duration', 'Bi-weekly Payouts', 'Personal Account Manager', 'Exclusive Deals'], active: true, createdAt: { toDate: () => new Date() } as any },
-  ];
-
-  const fallbackProjects = [
-    { id: '1', name: 'Poultry Farm', location: 'Ogun State', description: 'Commercial poultry farming', imageUrl: './images/poultry-farm.jpg', investmentAmount: 500000, roiPercentage: 78, durationDays: 24, spotsLeft: 12, active: true, createdAt: { toDate: () => new Date() } as any },
-    { id: '2', name: 'Rice Farm', location: 'Kebbi State', description: 'Large-scale rice cultivation', imageUrl: './images/rice-farm.jpg', investmentAmount: 800000, roiPercentage: 60, durationDays: 24, spotsLeft: 8, active: true, createdAt: { toDate: () => new Date() } as any },
-    { id: '3', name: 'Fish Farm', location: 'Lagos State', description: 'Aquaculture farming', imageUrl: './images/fish-farm.jpg', investmentAmount: 300000, roiPercentage: 80, durationDays: 10, spotsLeft: 25, active: true, createdAt: { toDate: () => new Date() } as any },
-  ];
-
-  const displayPlans = plans.length > 0 ? plans : fallbackPlans;
-  const displayProjects = projects.length > 0 ? projects : fallbackProjects;
+  const displayPlans = plans;
+  const displayProjects = projects;
 
   const howItWorks = [
     { icon: <User className="w-8 h-8" />, title: 'Register Account', description: 'Create your account in a few simple steps.' },

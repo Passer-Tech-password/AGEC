@@ -10,20 +10,18 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { getUserInvestments, getUserTransactions, UserInvestment, Transaction } from '@/lib/firebaseServices';
 
-// Sample chart data (can be replaced with real earnings data later)
-const chartData = [
-  { name: 'May 1', earnings: 20000 },
-  { name: 'May 8', earnings: 25000 },
-  { name: 'May 15', earnings: 30000 },
-  { name: 'May 22', earnings: 40000 },
-  { name: 'May 29', earnings: 45000 },
-];
-
 export default function DashboardPage() {
   const { user, userData, loading } = useAuth();
   const [investments, setInvestments] = useState<UserInvestment[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [dataLoading, setDataLoading] = useState(true);
+  const [chartData, setChartData] = useState<{ name: string; earnings: number }[]>([]);
+
+  const totalInvested = userData?.totalInvested || 0;
+  const totalEarnings = userData?.totalEarnings || 0;
+  const availableBalance = userData?.walletBalance || 0;
+  const referralEarnings = 0; // TODO: Fetch referral earnings later
+  const totalWithdrawn = userData?.totalWithdrawn || 0;
 
   useEffect(() => {
     if (user) {
@@ -33,13 +31,32 @@ export default function DashboardPage() {
       ]).then(([inv, tx]) => {
         setInvestments(inv);
         setTransactions(tx);
+        
+        // Generate chart data from investments (simplified)
+        const data: { name: string; earnings: number }[] = [];
+        let cumulativeEarnings = 0;
+        for (let i = 0; i < 5; i++) {
+          const date = new Date();
+          date.setDate(date.getDate() - (4 - i) * 7);
+          const month = date.toLocaleString('default', { month: 'short' });
+          const day = date.getDate();
+          // For demo, use a fraction of total earnings per period
+          const periodEarnings = totalEarnings / 5;
+          cumulativeEarnings += periodEarnings;
+          data.push({
+            name: `${month} ${day}`,
+            earnings: Math.floor(cumulativeEarnings)
+          });
+        }
+        setChartData(data);
+        
         setDataLoading(false);
       }).catch(err => {
         console.error("Error fetching dashboard data:", err);
         setDataLoading(false);
       });
     }
-  }, [user]);
+  }, [user, totalEarnings]);
 
   if (loading || dataLoading) {
     return (
@@ -48,14 +65,26 @@ export default function DashboardPage() {
       </div>
     );
   }
-
-  const totalInvested = userData?.totalInvested || 0;
-  const totalEarnings = userData?.totalEarnings || 0;
-  const availableBalance = userData?.walletBalance || 0;
-  const referralEarnings = 0; // TODO: Fetch referral earnings later
-  const totalWithdrawn = userData?.totalWithdrawn || 0;
   
   const userName = user?.displayName || user?.email?.split('@')[0] || 'User';
+  
+  // Find next upcoming payout
+  let nextPayout: { date: Date | null; amount: number } = { date: null, amount: 0 };
+  const activeInvestments = investments.filter(inv => inv.status === 'active' && inv.nextPayoutDate);
+  if (activeInvestments.length > 0) {
+    const nextInv = activeInvestments.reduce((a, b) => {
+      const aDate = a.nextPayoutDate?.toDate();
+      const bDate = b.nextPayoutDate?.toDate();
+      if (!aDate) return b;
+      if (!bDate) return a;
+      return aDate < bDate ? a : b;
+    });
+    if (nextInv.nextPayoutDate) {
+      nextPayout.date = nextInv.nextPayoutDate.toDate();
+      const durationDays = (nextInv.maturityDate.toDate().getTime() - nextInv.startDate.toDate().getTime()) / (1000 * 60 * 60 * 24);
+      nextPayout.amount = Math.floor(nextInv.amount * (nextInv.roiPercentage / 100) / (durationDays / 14));
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -147,60 +176,64 @@ export default function DashboardPage() {
 
       {/* Charts and Next Payout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-1 lg:col-span-2 border-2 border-transparent hover:border-green-100 shadow-lg transition-all">
-          <CardHeader>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-              <CardTitle className="text-lg font-bold">Investment Growth</CardTitle>
-              <select className="text-sm border border-gray-200 rounded-xl px-4 py-2 bg-white w-full sm:w-auto">
-                <option>This Month</option>
-                <option>Last 3 Months</option>
-                <option>This Year</option>
-              </select>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64 sm:h-72">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                  <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#9ca3af" fontSize={12} tickFormatter={(value: any) => `₦${value/1000}k`} tickLine={false} axisLine={false} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
-                    formatter={(value: any) => formatCurrency(value)}
-                  />
-                  <Line type="monotone" dataKey="earnings" stroke="#16a34a" strokeWidth={4} dot={{ fill: '#16a34a', r: 5, strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 7 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+        {chartData.length > 0 && (
+          <Card className="lg:col-span-2 border-2 border-transparent hover:border-green-100 shadow-lg transition-all">
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <CardTitle className="text-lg font-bold">Investment Growth</CardTitle>
+                <select className="text-sm border border-gray-200 rounded-xl px-4 py-2 bg-white w-full sm:w-auto">
+                  <option>This Month</option>
+                  <option>Last 3 Months</option>
+                  <option>This Year</option>
+                </select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64 sm:h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+                    <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#9ca3af" fontSize={12} tickFormatter={(value: any) => `₦${value/1000}k`} tickLine={false} axisLine={false} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+                      formatter={(value: any) => formatCurrency(value)}
+                    />
+                    <Line type="monotone" dataKey="earnings" stroke="#16a34a" strokeWidth={4} dot={{ fill: '#16a34a', r: 5, strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 7 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card className="border-2 border-transparent hover:border-green-100 shadow-lg transition-all">
-          <CardHeader>
-            <CardTitle className="text-lg font-bold">Upcoming Withdrawal</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-5 border border-green-100">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-green-700 rounded-xl flex items-center justify-center">
-                  <Wallet className="w-6 h-6 text-white" />
+        {nextPayout.date && (
+          <Card className="border-2 border-transparent hover:border-green-100 shadow-lg transition-all">
+            <CardHeader>
+              <CardTitle className="text-lg font-bold">Upcoming Payout</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-5 border border-green-100">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-green-700 rounded-xl flex items-center justify-center">
+                    <Wallet className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 font-medium">Next Payout Date</p>
+                    <p className="text-lg font-bold text-gray-900">{nextPayout.date.toLocaleDateString()}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-500 font-medium">Next Withdrawal Date</p>
-                  <p className="text-lg font-bold text-gray-900">May 30, 2024</p>
+                <div className="border-t border-green-100 pt-4">
+                  <p className="text-sm text-gray-500 font-medium mb-1">Estimated Payout Amount</p>
+                  <p className="text-xl sm:text-2xl font-bold text-green-700">{formatCurrency(nextPayout.amount)}</p>
                 </div>
               </div>
-              <div className="border-t border-green-100 pt-4">
-                <p className="text-sm text-gray-500 font-medium mb-1">Estimated Payout Amount</p>
-                <p className="text-xl sm:text-2xl font-bold text-green-700">{formatCurrency(7500)}</p>
+              <div className="text-center">
+                <p className="text-sm text-gray-500 font-medium">Frequency: Every 2 Weeks</p>
               </div>
-            </div>
-            <div className="text-center">
-              <p className="text-sm text-gray-500 font-medium">Frequency: Every 2 Weeks</p>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Recent Investments and Transactions */}

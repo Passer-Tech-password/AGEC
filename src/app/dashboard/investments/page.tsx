@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { formatCurrency } from '@/lib/utils';
-import { INVESTMENT_PLANS, INVESTMENT_CATEGORIES } from '@/lib/data';
 import { Briefcase, CheckCircle, Calendar, TrendingUp, Plus, Leaf, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -190,55 +189,11 @@ export default function InvestmentsPage() {
           <CardDescription>Choose a plan to grow your agricultural portfolio</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-            {plans.length === 0 ? (
-              INVESTMENT_PLANS.map((plan) => (
-                <div key={plan.id} className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all">
-                  <div className={`w-12 h-12 ${plan.color} rounded-xl flex items-center justify-center text-white mb-4`}>
-                    {plan.name.charAt(0)}
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">{plan.name}</h3>
-                  <p className="text-gray-500 text-sm mb-4">{plan.description}</p>
-                  <div className="space-y-2 mb-6">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Min:</span>
-                      <span className="font-semibold">{formatCurrency(plan.minInvestment)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">ROI:</span>
-                      <span className="font-semibold text-green-700">{plan.roi}%</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-500">Duration:</span>
-                      <span className="font-semibold">{plan.duration} months</span>
-                    </div>
-                  </div>
-                  <Button className="w-full bg-green-700 hover:bg-green-800 text-white" onClick={() => {
-                    // Convert to InvestmentPlanData
-                    const planData: InvestmentPlanData = {
-                      id: plan.id,
-                      name: plan.name,
-                      description: plan.description,
-                      minInvestment: plan.minInvestment,
-                      maxInvestment: plan.maxInvestment,
-                      roiPercentage: plan.roi,
-                      durationDays: plan.duration * 30, // approximate
-                      biWeeklyPayout: plan.biWeeklyMin,
-                      popular: false,
-                      featured: false,
-                      features: [],
-                      active: true,
-                      createdAt: { toDate: () => new Date() } as any
-                    };
-                    setSelectedPlan(planData);
-                    setShowInvestModal(true);
-                  }}>
-                    Invest Now
-                  </Button>
-                </div>
-              ))
-            ) : (
-              plans.map((plan) => (
+          {plans.length === 0 ? (
+            <p className="text-center text-gray-500 py-8">No investment plans available at the moment</p>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+              {plans.map((plan) => (
                 <div key={plan.id} className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all">
                   <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center text-white mb-4">
                     {plan.name.charAt(0)}
@@ -266,35 +221,9 @@ export default function InvestmentsPage() {
                     Invest Now
                   </Button>
                 </div>
-              ))
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Investment Categories */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Investment Categories</CardTitle>
-          <CardDescription>Explore different agricultural sectors to invest in</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {INVESTMENT_CATEGORIES.map((category) => (
-              <div key={category.id} className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all text-center">
-                <div className="text-5xl mb-4">{category.icon}</div>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">{category.name}</h3>
-                <ul className="space-y-1 mb-4">
-                  {category.items.map((item, i) => (
-                    <li key={i} className="text-gray-600 text-sm">{item}</li>
-                  ))}
-                </ul>
-                <Button variant="secondary" className="w-full">
-                  Explore Projects
-                </Button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
