@@ -350,7 +350,7 @@ export default function DashboardPage() {
                 <span className="font-semibold text-base sm:text-lg">Withdraw Funds</span>
               </Button>
             </Link>
-            <Link href="/dashboard/investments" className="w-full">
+            <Link href="/dashboard/farm-projects" className="w-full">
               <Button className="w-full h-auto py-5 sm:py-7 flex-col gap-3 bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-lg shadow-amber-500/20 rounded-2xl">
                 <Leaf className="w-8 h-8" />
                 <span className="font-semibold text-base sm:text-lg">View Farm Projects</span>
